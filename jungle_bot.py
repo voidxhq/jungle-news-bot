@@ -6,8 +6,6 @@ from google.genai import types
 import json
 import random
 import os
-from datetime import datetime, timedelta
-from time import mktime
 
 # ==========================================
 # ⚙️ CLOUD CONFIGURATION (Hidden Keys!)
@@ -17,6 +15,8 @@ JUNGLE_BOT_KEY = os.environ.get("JUNGLE_BOT_KEY")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 PEXELS_API_KEY = os.environ.get("PEXELS_API_KEY")
 
+MEMORY_FILE = "posted_urls.txt"
+
 GHANA_RSS_FEEDS = [
     "https://www.myjoyonline.com/feed/",          
     "https://citinewsroom.com/feed/",             
@@ -25,8 +25,16 @@ GHANA_RSS_FEEDS = [
 ]
 
 feedparser.USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-
 client = genai.Client(api_key=GEMINI_API_KEY)
+
+# --- CLOUD MEMORY FUNCTIONS ---
+def is_already_posted(url):
+    if not os.path.exists(MEMORY_FILE): return False
+    with open(MEMORY_FILE, "r", encoding="utf-8") as file: return url in file.read()
+
+def remember_url(url):
+    with open(MEMORY_FILE, "a", encoding="utf-8") as file: file.write(url + "\n")
+# ------------------------------
 
 def find_clean_image(keyword):
     search_query = f"{keyword} Africa"
@@ -39,7 +47,7 @@ def find_clean_image(keyword):
             if data.get('photos') and len(data['photos']) > 0:
                 return data['photos'][0]['src']['large2x']
     except Exception as e:
-        print(f"⚠️ Pexels search failed: {e}")
+        pass
     return None
 
 def rewrite_article_with_ai(raw_text):
@@ -49,18 +57,17 @@ def rewrite_article_with_ai(raw_text):
     
     Rules:
     1. The article 'content' MUST be strictly between 800 and 1200 words. 
-    2. Expand on the story by adding relevant background context, explaining the broader implications, and discussing potential future impacts. Do not repeat yourself.
-    3. Format the 'content' in clean HTML. Use at least 6-8 well-developed <p> paragraphs and multiple <h2> tags. Use single quotes inside HTML.
+    2. Expand on the story by adding relevant background context. Do not repeat yourself.
+    3. Format the 'content' in clean HTML. Use multiple <p> and <h2> tags. Use single quotes inside HTML.
     4. Do NOT copy sentences from the original. 
     5. Write a catchy 'title' and a punchy 'excerpt' (THE EXCERPT MUST BE STRICTLY UNDER 250 CHARACTERS).
     6. IMAGE LOGIC: If the story is heavily focused on a specific politician, celebrity, or unique breaking event, set 'image_keywords' to EXACTLY "USE_ORIGINAL". If it is a general story, provide a SINGLE, simple visual search keyword.
-    7. Pick the most accurate 'category_slug' for this story from this exact list: ["news", "sports", "entertainment", "campusinsider", "tech", "ghana"].
+    7. Pick the most accurate 'category_slug' for this story from: ["news", "sports", "entertainment", "campusinsider", "tech", "ghana"].
     8. Decide if this is 'is_breaking' news (true or false).
     
-    Return a JSON object with exactly these keys: "title", "content", "excerpt", "image_keywords", "category_slug", "is_breaking".
+    Return a JSON object with keys: "title", "content", "excerpt", "image_keywords", "category_slug", "is_breaking".
     
-    Original Text:
-    {raw_text}
+    Original Text: {raw_text}
     """
     try:
         response = client.models.generate_content(
@@ -74,70 +81,50 @@ def rewrite_article_with_ai(raw_text):
         return None
 
 def run_bot():
-    # Shuffle the list so it prioritizes a different site every time
     random.shuffle(GHANA_RSS_FEEDS)
-    
     feed = None
-    # Loop through the feeds until we find one that lets us in
     for target_feed in GHANA_RSS_FEEDS:
         print(f"📡 Scanning for news at {target_feed}...")
         feed = feedparser.parse(target_feed)
-        
         if feed.entries:
-            print(f"✅ Success! Grabbed {len(feed.entries)} articles from this feed.")
-            break # We found a working feed, stop looking!
-        else:
-            print("⚠️ Blocked by server security or feed empty. Trying the next one...")
+            print(f"✅ Success! Grabbed {len(feed.entries)} articles.")
+            break 
             
     if not feed or not feed.entries:
-        print("❌ All feeds were blocked! The bot will try again in 3 hours.")
+        print("❌ All feeds blocked! Try again later.")
         return
         
     posted_count = 0
-    now = datetime.utcnow()
-    
     for entry in feed.entries[:5]:
-        if posted_count >= 2:
-            break
-            
+        if posted_count >= 2: break
+        
         print(f"\n📰 Found Story: {entry.title}")
         
-        # 👇 THE CLOUD MEMORY: Check if the article is too old
-        if hasattr(entry, 'published_parsed') and entry.published_parsed:
-            article_time = datetime.fromtimestamp(mktime(entry.published_parsed))
-            if now - article_time > timedelta(hours=4):
-                print("⏭️ Article is older than 4 hours. Skipping to avoid duplicates...")
-                continue
+        # 👇 THE BRAIN IS BACK 👇
+        if is_already_posted(entry.link):
+            print("⏭️ We already posted this! Skipping to avoid duplicates...")
+            continue
             
         scraper = NewsScraper(entry.link)
         try:
             scraper.download()
             scraper.parse()
         except:
-            print("⚠️ Could not download article. Skipping.")
             continue
             
         raw_text = scraper.text
-        if not raw_text or len(raw_text) < 100:
-            print("⚠️ Article too short to rewrite. Skipping.")
-            continue
+        if not raw_text or len(raw_text) < 100: continue
             
         print("🧠 Sending to AI...")
         ai_data = rewrite_article_with_ai(raw_text)
-        if not ai_data:
-            continue
+        if not ai_data: continue
             
         keyword = ai_data.get("image_keywords", "news")
         if keyword == "USE_ORIGINAL":
             final_cover_image = scraper.top_image 
-            print("📸 AI detected a specific person/event. Using the original source image.")
         else:
             clean_image = find_clean_image(keyword)
             final_cover_image = clean_image if clean_image else scraper.top_image 
-            if clean_image:
-                print(f"✅ Successfully found a clean stock photo for '{keyword}'!")
-            else:
-                print("⚠️ Clean image search failed. Falling back to the original source image.")
             
         raw_excerpt = ai_data.get("excerpt", "")
         safe_excerpt = raw_excerpt[:290] + "..." if len(raw_excerpt) > 290 else raw_excerpt
@@ -156,6 +143,7 @@ def run_bot():
         
         if res.status_code == 201:
             print(f"✅ SUCCESS! Live at: {res.json().get('url')}")
+            remember_url(entry.link) # Save to memory!
             posted_count += 1
         else:
             print(f"❌ FAILED to publish: {res.text}")
