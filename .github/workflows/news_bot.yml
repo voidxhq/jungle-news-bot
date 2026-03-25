@@ -1,0 +1,30 @@
+name: Jungle News Auto-Bot
+
+on:
+  schedule:
+    # Runs every 3 hours
+    - cron: '0 */3 * * *'
+  workflow_dispatch: # Allows manual clicking
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install requests feedparser newspaper3k google-genai lxml_html_clean ddgs
+
+      - name: Run Jungle Bot
+        env:
+          JUNGLE_BOT_KEY: ${{ secrets.JUNGLE_BOT_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+        run: python jungle_bot.py
