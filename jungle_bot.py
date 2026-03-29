@@ -6,27 +6,59 @@ from google.genai import types
 import json
 import random
 import os
+import urllib.parse
+import re
 from datetime import datetime, timedelta
 from time import mktime
 
 # ==========================================
-# ⚙️ CLOUD CONFIGURATION (Hidden Keys!)
+# ⚙️ CLOUD CONFIGURATION (GitHub Secrets)
 # ==========================================
 RENDER_API_URL = "https://junglenews.online/api/bot/post-article"
 JUNGLE_BOT_KEY = os.environ.get("JUNGLE_BOT_KEY")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 PEXELS_API_KEY = os.environ.get("PEXELS_API_KEY")
 
+# 🌍 MASSIVE GHANA & CAMPUS RSS FEEDS
 GHANA_RSS_FEEDS = [
+    "https://kuulpeeps.com/feed/",
+    "https://yfmghana.com/feed/",
+    "https://www.campusgh.com/feed/",
+    "https://ucc.edu.gh/news/rss", 
+    "https://ug.edu.gh/news/rss.xml", 
+    "https://knust.edu.gh/news/rss",
+    "https://yen.com.gh/rss/",
     "https://www.myjoyonline.com/feed/",          
     "https://citinewsroom.com/feed/",             
-    "https://pulse.com.gh/news/rss",              
-    "https://feeds.bbci.co.uk/news/world/africa/rss.xml" 
+    "https://pulse.com.gh/news/rss",
+    "https://www.ghanaweb.com/GhanaHomePage/NewsArchive/rss.xml",
+    "https://graphic.com.gh/feed/"
 ]
 
-feedparser.USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+feedparser.USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 
 client = genai.Client(api_key=GEMINI_API_KEY)
+
+# ─── 🔥 THE X (TWITTER) TREND SNIPER ──────────────────────────────────────────
+def get_trending_x_feed():
+    print("🔍 Checking X (Twitter) for the top Ghana trend...")
+    try:
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+        res = requests.get("https://trends24.in/ghana/", headers=headers, timeout=10)
+        
+        # Regex to find the #1 trend
+        match = re.search(r'class="trend-name"[^>]*><a[^>]*>([^<]+)</a>', res.text)
+        if match:
+            top_trend = match.group(1).strip()
+            print(f"🔥 TOP TREND DETECTED: {top_trend}")
+            
+            # Turn the trend into a Google News RSS feed search!
+            safe_trend = urllib.parse.quote(f"{top_trend} Ghana")
+            trend_rss_url = f"https://news.google.com/rss/search?q={safe_trend}&hl=en-NG&gl=GH&ceid=GH:en"
+            return trend_rss_url
+    except Exception as e:
+        print(f"⚠️ Could not fetch X trends: {e}")
+    return None
 
 def find_clean_image(keyword):
     search_query = f"{keyword} Africa"
@@ -39,25 +71,30 @@ def find_clean_image(keyword):
             if data.get('photos') and len(data['photos']) > 0:
                 return data['photos'][0]['src']['large2x']
     except Exception as e:
-        print(f"⚠️ Pexels search failed: {e}")
+        pass
     return None
 
-def rewrite_article_with_ai(raw_text):
+def rewrite_article_with_ai(raw_text, forced_category=None):
+    category_rule = f"Set 'category_slug' to EXACTLY '{forced_category}'." if forced_category else "Pick the most accurate 'category_slug' from this list: ['news', 'sports', 'entertainment', 'campusinsider', 'tech', 'ghana']."
+
     prompt = f"""
-    You are a senior investigative journalist for 'Jungle News', a premier Ghanaian digital news platform.
-    Read the following facts and write a comprehensive, in-depth, and engaging long-form news article.
+    You are the lead content writer for a viral, highly engaging Ghanaian news and campus blog.
+    Read the following raw facts and write a highly clickable, engaging, long-form news article.
     
-    Rules:
-    1. The article 'content' MUST be strictly between 800 and 1200 words. 
-    2. Expand on the story by adding relevant background context, explaining the broader implications, and discussing potential future impacts. Do not repeat yourself.
-    3. Format the 'content' in clean HTML. Use at least 6-8 well-developed <p> paragraphs and multiple <h2> tags. Use single quotes inside HTML.
-    4. Do NOT copy sentences from the original. 
-    5. Write a catchy 'title' and a punchy 'excerpt' (THE EXCERPT MUST BE STRICTLY UNDER 250 CHARACTERS).
-    6. IMAGE LOGIC: If the story is heavily focused on a specific politician, celebrity, or unique breaking event, set 'image_keywords' to EXACTLY "USE_ORIGINAL". If it is a general story, provide a SINGLE, simple visual search keyword.
-    7. Pick the most accurate 'category_slug' for this story from this exact list: ["news", "sports", "entertainment", "campusinsider", "tech", "ghana"].
-    8. Decide if this is 'is_breaking' news (true or false).
+    STRICT WRITING RULES:
+    1. LENGTH (CRITICAL): The article 'content' MUST be strictly between 800 and 1200 words to qualify for Google AdSense. Expand on the background and implications.
+    2. Tone: Sensational but accurate, highly engaging, relatable to Ghanaian youth.
+    3. Headline: Write a very catchy, curiosity-inducing 'title'.
+    4. Structure: Start with a <ul> list of 3-4 bullet points ("What you need to know"). Follow with short, punchy paragraphs (max 2-3 sentences).
+    5. Formatting: Heavily use HTML <strong> tags to bold important names. Use multiple <h2> tags.
+    6. Excerpt: Write a punchy 'excerpt' strictly under 200 characters.
     
-    Return a JSON object with exactly these keys: "title", "content", "excerpt", "image_keywords", "category_slug", "is_breaking".
+    META RULES:
+    7. IMAGE LOGIC: If it's a specific person/event, set 'image_keywords' to "USE_ORIGINAL". Otherwise, give a 1-2 word search keyword.
+    8. {category_rule}
+    9. Decide if this is 'is_breaking' news (true or false).
+    
+    Return a JSON object with EXACTLY these keys: "title", "content", "excerpt", "image_keywords", "category_slug", "is_breaking".
     
     Original Text:
     {raw_text}
@@ -73,36 +110,50 @@ def rewrite_article_with_ai(raw_text):
         print(f"❌ AI Rewrite failed: {e}")
         return None
 
+def get_campus_prioritized_entries(feed):
+    campus_keywords = ['ucc', 'legon', 'knust', 'student', 'campus', 'src', 'vice chancellor', 'hostel', 'nugs']
+    campus_entries, general_entries = [], []
+    for entry in feed.entries:
+        title_lower = entry.title.lower()
+        if any(keyword in title_lower for keyword in campus_keywords):
+            campus_entries.append(entry)
+        else:
+            general_entries.append(entry)
+    return campus_entries + general_entries
+
 def run_bot():
-    # Shuffle the list so it prioritizes a different site every time
     random.shuffle(GHANA_RSS_FEEDS)
     
+    # 🔥 Try to snipe the top X Trend first!
+    trend_feed = get_trending_x_feed()
+    if trend_feed:
+        GHANA_RSS_FEEDS.insert(0, trend_feed) # Put it at the very front of the line
+    
     feed = None
-    # Loop through the feeds until we find one that lets us in
     for target_feed in GHANA_RSS_FEEDS:
-        print(f"📡 Scanning for news at {target_feed}...")
-        feed = feedparser.parse(target_feed)
-        
-        if feed.entries:
-            print(f"✅ Success! Grabbed {len(feed.entries)} articles from this feed.")
-            break # We found a working feed, stop looking!
-        else:
-            print("⚠️ Blocked by server security or feed empty. Trying the next one...")
+        print(f"📡 Scanning for news at {target_feed[:50]}...")
+        try:
+            feed = feedparser.parse(target_feed)
+            if feed.entries:
+                print(f"✅ Success! Grabbed {len(feed.entries)} articles from this feed.")
+                break
+        except Exception as e:
+            print(f"⚠️ Feed error: {e}")
             
     if not feed or not feed.entries:
-        print("❌ All feeds were blocked! The bot will try again in 3 hours.")
+        print("❌ All feeds were blocked or empty! The bot will try again later.")
         return
         
+    sorted_entries = get_campus_prioritized_entries(feed)
     posted_count = 0
     now = datetime.utcnow()
     
-    for entry in feed.entries[:5]:
+    for entry in sorted_entries:
         if posted_count >= 2:
             break
             
         print(f"\n📰 Found Story: {entry.title}")
         
-        # 👇 THE CLOUD MEMORY: Check if the article is too old
         if hasattr(entry, 'published_parsed') and entry.published_parsed:
             article_time = datetime.fromtimestamp(mktime(entry.published_parsed))
             if now - article_time > timedelta(hours=4):
@@ -122,22 +173,20 @@ def run_bot():
             print("⚠️ Article too short to rewrite. Skipping.")
             continue
             
-        print("🧠 Sending to AI...")
-        ai_data = rewrite_article_with_ai(raw_text)
+        # Route to Campus Insider if from a uni site
+        is_campus_source = any(campus_url in entry.link for campus_url in ['ucc.edu', 'knust.edu', 'ug.edu', 'kuulpeeps', 'campusgh'])
+        
+        print("🧠 Sending to AI for Yen.com.gh Style + AdSense Rewrite...")
+        ai_data = rewrite_article_with_ai(raw_text, forced_category="campusinsider" if is_campus_source else None)
         if not ai_data:
             continue
             
         keyword = ai_data.get("image_keywords", "news")
         if keyword == "USE_ORIGINAL":
             final_cover_image = scraper.top_image 
-            print("📸 AI detected a specific person/event. Using the original source image.")
         else:
             clean_image = find_clean_image(keyword)
             final_cover_image = clean_image if clean_image else scraper.top_image 
-            if clean_image:
-                print(f"✅ Successfully found a clean stock photo for '{keyword}'!")
-            else:
-                print("⚠️ Clean image search failed. Falling back to the original source image.")
             
         raw_excerpt = ai_data.get("excerpt", "")
         safe_excerpt = raw_excerpt[:290] + "..." if len(raw_excerpt) > 290 else raw_excerpt
