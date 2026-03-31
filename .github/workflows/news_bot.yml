@@ -19,7 +19,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests feedparser newspaper3k google-genai lxml_html_clean ddgs
+          python -m pip install --upgrade pip
+          pip install requests feedparser newspaper3k groq
 
       - name: Run Jungle Bot
         env:
