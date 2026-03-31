@@ -160,20 +160,40 @@ def rewrite_article_with_ai(raw_text, forced_category, missing_categories):
     )
 
     prompt = f"""
-    You are the Editorial Director for Jungle News (UCC's leading news site) and VoidX.
-    Rewrite this source material into a professional, engaging long-form news article (800-1200 words).
-    
-    GUIDELINES:
-    1. HEADLINE: Catchy but credible.
-    2. STRUCTURE: Start with 3-4 bullet points in a <ul>. Use <p> and <h2> for body text.
-    3. EXCERPT: Concise summary under 240 chars.
-    4. IMAGE: Set 'image_keywords' to "USE_ORIGINAL" for specific Ghanaian events, otherwise use generic keywords.
-    5. {cat_logic}
-    6. VISIBILITY (STRICT): Choose EXACTLY ONE: "normal" (90% of news), "breaking" (emergencies/firings), "trending" (viral social media), or "featured" (exclusive deep-dives).
-    
-    Return EXACTLY a JSON object with NO MARKDOWN formatting:
+    You are a senior journalist at Jungle News, Ghana's leading campus news platform.
+    Your job is to rewrite the source material into a FULL, ORIGINAL, high-quality news article
+    that meets Google AdSense content quality standards.
+
+    ⚠️ LENGTH REQUIREMENT: The 'content' field MUST be at least 800 words. Do NOT produce anything shorter.
+    Count your words before returning. If it is under 800 words, expand with more analysis, background context, quotes, and commentary.
+
+    CONTENT QUALITY RULES (AdSense standards):
+    - Write in a natural, human journalist voice. Avoid robotic or repetitive phrasing.
+    - Never copy sentences directly from the source. Rewrite everything in fresh language.
+    - Add CONTEXT: explain WHY this news matters to Ghanaian/campus readers.
+    - Add BACKGROUND: 1-2 paragraphs of relevant history or context around the topic.
+    - Add ANALYSIS: what does this mean going forward? What should readers watch out for?
+    - Use VARIED sentence lengths. Mix short punchy sentences with longer explanatory ones.
+    - NO keyword stuffing. Write naturally.
+
+    REQUIRED HTML STRUCTURE for 'content':
+    1. Open with a <ul> containing 3-4 key highlight bullet points (what happened, who, why it matters).
+    2. Write the intro in 2 <p> tags — hook the reader immediately.
+    3. Use at least 3 <h2> subheadings to break up the article into clear sections.
+    4. Each section should have 2-3 full <p> paragraphs underneath it.
+    5. End with a "What This Means" or "Looking Ahead" <h2> section with your analysis.
+    6. Close with a short <p> conclusion that ties everything together.
+
+    OTHER FIELDS:
+    - HEADLINE: Catchy, specific, and credible. No clickbait.
+    - EXCERPT: A compelling 1-sentence summary under 240 characters.
+    - IMAGE: Set 'image_keywords' to "USE_ORIGINAL" for specific Ghanaian people/events, otherwise provide 2-3 descriptive generic keywords.
+    - CATEGORY: {cat_logic}
+    - VISIBILITY (STRICT): Choose EXACTLY ONE: "normal" (90% of articles), "breaking" (urgent emergencies), "trending" (viral/social media stories), "featured" (exclusive investigations).
+
+    Return EXACTLY a JSON object with NO MARKDOWN, NO code fences, NO extra text outside the JSON:
     {{"title": "...", "content": "...", "excerpt": "...", "image_keywords": "...", "category_slug": "...", "visibility_tag": "..."}}
-    
+
     Source Material:
     {raw_text}
     """
@@ -183,7 +203,7 @@ def rewrite_article_with_ai(raw_text, forced_category, missing_categories):
             model="llama-3.1-8b-instant",
             response_format={"type": "json_object"},
             temperature=0.7,
-            max_tokens=4000
+            max_tokens=8000
         )
         clean_text = chat_completion.choices[0].message.content.strip()
         return json.loads(clean_text)
@@ -265,7 +285,7 @@ def run_bot():
             print("⚠️  Failed to scrape article text. Skipping.")
             continue
 
-        if not scr.text or len(scr.text) < 200:
+        if not scr.text or len(scr.text) < 400:
             print("⚠️  Article text too short or blocked by paywall. Skipping.")
             continue
 
