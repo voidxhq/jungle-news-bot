@@ -1,8 +1,7 @@
 import requests
 import feedparser
 from newspaper import Article as NewsScraper, Config
-from google import genai
-from google.genai import types
+from groq import Groq
 import json
 import os
 import urllib.parse
@@ -14,7 +13,7 @@ from time import mktime
 # ⚙️ CLOUD CONFIGURATION & GLOBALS
 # ==========================================
 RENDER_API_URL = "https://junglenews.online/api/bot/post-article"
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 PEXELS_API_KEY = os.environ.get("PEXELS_API_KEY")
 
 # 🎭 THE VIRTUAL NEWSROOM KEYS
@@ -61,7 +60,9 @@ CATEGORY_KEYWORDS = {
 }
 
 feedparser.USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-client = genai.Client(api_key=GEMINI_API_KEY)
+
+# Initialize Groq Client
+client = Groq(api_key=GROQ_API_KEY)
 
 # ─── 🎭 WRITER ROUTING LOGIC ──────────────────────────────────────────────────
 def get_writer_key(category_slug):
@@ -138,24 +139,29 @@ def rewrite_article_with_ai(raw_text, forced_category, missing_categories):
     5. {cat_logic}
     6. VISIBILITY (STRICT): Choose EXACTLY ONE: "normal" (90% of news), "breaking" (emergencies/firings), "trending" (viral social media), or "featured" (exclusive deep-dives).
     
-    Return EXACTLY a JSON object with NO MARKDOWN formatting (no ```json): 
+    Return EXACTLY a JSON object with NO MARKDOWN formatting: 
     {{"title": "...", "content": "...", "excerpt": "...", "image_keywords": "...", "category_slug": "...", "visibility_tag": "..."}}
     
     Source Material: 
     {raw_text}
     """
     try:
-        response = client.models.generate_content(
-            model='gemini-2.5-flash', # Updated to 2.5 standard for better logic
-            contents=prompt, 
-            config=types.GenerateContentConfig(response_mime_type="application/json")
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+            model="llama-3.1-8b-instant", # Lightning fast Llama 3.1
+            response_format={"type": "json_object"}, # Forces Groq to return perfect JSON
+            temperature=0.7
         )
         
-        # Strip markdown just in case Gemini wraps it in ```json
-        clean_text = response.text.replace("```json", "").replace("```", "").strip()
+        clean_text = chat_completion.choices[0].message.content.strip()
         return json.loads(clean_text)
     except Exception as e: 
-        print(f"❌ Gemini AI Error: {e}")
+        print(f"❌ Groq AI Error: {e}")
         return None
 
 # ─── 🐺 HUNTING LOGIC ────────────────────────────────────────────────────────
@@ -172,7 +178,7 @@ def score_entry_for_hunting(entry, missing_categories):
 
 def run_bot():
     print("=========================================")
-    print("🚀 BOT IS AWAKE: Starting Virtual Newsroom")
+    print("🚀 BOT IS AWAKE: Starting Virtual Newsroom (Powered by Groq)")
     print("=========================================")
     
     posted_urls = get_posted_urls()
@@ -225,7 +231,7 @@ def run_bot():
             
         is_campus = any(kw in entry.title.lower() for kw in CATEGORY_KEYWORDS['campusinsider'])
         
-        print("🧠 Sending to Gemini AI for rewrite...")
+        print("🧠 Sending to Groq AI for rewrite...")
         data = rewrite_article_with_ai(scr.text, "campusinsider" if is_campus else None, missing_categories)
         
         if not data: 
