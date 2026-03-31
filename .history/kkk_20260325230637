@@ -1,4 +1,0 @@
-RENDER_API_URL = "https://junglenews.online/api/bot/post-article"
-JUNGLE_BOT_KEY = "jungle_super_secret_bot_key_2026"  
-GEMINI_API_KEY = "AIzaSyCE2zLpEmTtI5We3R6R2mAevuDsgGkW2KQ" 
-PEXELS_API_KEY = "JFtumHR8FAE3sOWQFOhFRkk5ryQE9wrljE2REfqcd4LW9mRdS8DzzAiP" # <--- PASTE PEXELS KEY HERE
