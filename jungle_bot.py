@@ -25,32 +25,56 @@ REQUIRED_CATEGORIES = ['news', 'sports', 'entertainment', 'campusinsider', 'tech
 
 # 🌍 DIVERSE GHANA & CAMPUS FEEDS
 GHANA_RSS_FEEDS = [
+    # 🎓 Campus / Youth
     "https://kuulpeeps.com/feed/",
-    "https://yfmghana.com/feed/",
     "https://www.campusgh.com/feed/",
+    "https://yfmghana.com/feed/",
+    
+    # 🇬🇭 Ghana News
     "https://yen.com.gh/rss/",
     "https://www.myjoyonline.com/feed/",
     "https://citinewsroom.com/feed/",
     "https://pulse.com.gh/news/rss",
     "https://www.ghanaweb.com/GhanaHomePage/NewsArchive/rss.xml",
     "https://graphic.com.gh/feed/",
-    "https://www.ghanaian-times.com.gh/feed/",
-    "https://dailyguidenetwork.com/feed/",
-    "https://www.ghanabusinessnews.com/feed/",
-    "https://thebftonline.com/feed/",              
     "https://www.adomonline.com/feed/",
     "https://starrfm.com.gh/feed/",
-    "https://www.asaaseradio.com/feed/",
-    "https://www.bbc.com/news/world/africa/rss.xml",
-    "https://www.aljazeera.com/xml/rss/all.xml", # Fixed missing comma here!
+    
+    # 💻 STUDENT TECH (🔥 IMPORTANT ADD)
+    "https://techcrunch.com/feed/",
+    "https://thenextweb.com/feed/",
+    "https://www.theverge.com/rss/index.xml",
+    "https://www.engadget.com/rss.xml",
+    "https://techcabal.com/feed/",
+    "https://www.itnewsafrica.com/feed/",
+    "https://www.gadgetsafrica.com/feed/",
+    "https://dev.to/feed",
+    
+    # 🔥 Trends
     "https://trends.google.com/trends/trendingsearches/daily/rss?geo=GH"
 ]
 
 CATEGORY_KEYWORDS = {
-    'sports': ['football', 'match', 'coach', 'black stars', 'league', 'goals', 'stadium', 'tournament', 'medals', 'games'],
+    'sports': ['football', 'match', 'coach', 'black stars', 'league', 'goals', 'stadium', 'tournament', 'medals', 'games','fifa', 'world cup', 'afcon', 'sports fest', 'athletics', 'basketball', 'volleyball','champions league', 'premier league', 'la liga', 'serie a', 'uefa'],
     'entertainment': ['shatta', 'stonebwoy', 'sarkodie', 'music', 'movie', 'actor', 'actress', 'concert', 'album', 'artist', 'afrobeats'],
-    'campusinsider': ['ucc', 'knust', 'legon', 'student', 'campus', 'src', 'hostel', 'nugs', 'tertiary', 'vc', 'lectures'],
-    'tech': ['app', 'apple', 'google', 'software', 'phone', 'internet', 'digital', 'ai', 'cyber', 'startup', 'tech', 'crypto'],
+    'campusinsider': [
+    'ucc', 'knust', 'legon', 'ug',"traditional halls",
+    'student', 'campus', 'src',"casford", "campus clash", "campus tradition",
+    'hostel', 'hall week',"first semester", "second semester","conti", "katanga", "atl",
+    'nugs', 'tertiary', 'src election','freshers',"finals","results"
+    'lecture', 'exam', 'morale',
+    'admission', 'graduation', 'artistes night','sports fest', 'interhall', 'intervarsity', 'student union'
+],
+    'tech': [
+    'ai', 'chatgpt', 'openai','claude', 'gemini', 'midjourney', 'dall-e',
+    'app', 'mobile app',
+    'iphone', 'android', 'phone',
+    'laptop', 'macbook',
+    'startup', 'side hustle', 'online money',
+    'coding', 'developer', 'programming',
+    'software', 'tech', 'internet',
+    'crypto', 'fintech', 'blockchain', 'nft', 'web3', 'gadgets', 'innovation', 'silicon', 'valley', 'elon musk', 'tesla', 'spacex', 'jeff bezos'
+],
     'ghana': ['mahama', 'bawumia', 'npp', 'ndc', 'accra', 'kumasi', 'ghanaian', 'cedi', 'parliament'],
     'news': ['police', 'court', 'killed', 'accident', 'hospital', 'government', 'minister']
 }
@@ -157,20 +181,33 @@ def rewrite_article_with_ai(raw_text, forced_category, missing_categories):
 def score_entry_for_hunting(entry, missing_categories):
     score = 0
     title = entry.title.lower()
-    
-    # Check if this article matches a category we are desperately looking for
+
+    # 🎯 PRIORITY: missing categories
     for cat in missing_categories:
         keywords = CATEGORY_KEYWORDS.get(cat, [])
         if any(kw in title for kw in keywords):
-            score += 50 # High priority boost!
+            score += 50
             break
-            
-    # Freshness boost
+
+    # 🎓 EXTRA BOOST for campus
+    if any(kw in title for kw in CATEGORY_KEYWORDS['campusinsider']):
+        score += 25
+
+    # 💻 EXTRA BOOST for student tech
+    if any(kw in title for kw in CATEGORY_KEYWORDS['tech']):
+        score += 20
+
+    # 🔥 Trending keywords boost
+    trending_words = ['ai', 'chatgpt', 'iphone', 'election', 'black stars']
+    if any(word in title for word in trending_words):
+        score += 15
+
+    # ⏱️ Freshness
     if hasattr(entry, 'published_parsed') and entry.published_parsed:
         hours_old = (datetime.utcnow() - datetime.fromtimestamp(mktime(entry.published_parsed))).total_seconds() / 3600
         if hours_old < 2:
             score += 10
-            
+
     return score
 
 def run_bot():
@@ -232,8 +269,10 @@ def run_bot():
             
         if not scr.text or len(scr.text) < 150: continue
             
-        is_campus = any(u in entry.link for u in ['ucc.edu', 'knust.edu', 'ug.edu', 'kuulpeeps', 'campusgh'])
-        
+        is_campus = (
+                    any(u in entry.link for u in ['ucc.edu', 'knust.edu', 'ug.edu', 'kuulpeeps', 'campusgh'])
+                    or any(kw in entry.title.lower() for kw in CATEGORY_KEYWORDS['campusinsider'])
+        )
         print(f"✍️ Writing: {entry.title[:50]}...")
         data = rewrite_article_with_ai(scr.text, "campusinsider" if is_campus else None, missing_categories)
         if not data: continue
