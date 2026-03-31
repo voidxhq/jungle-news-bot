@@ -181,33 +181,20 @@ def rewrite_article_with_ai(raw_text, forced_category, missing_categories):
 def score_entry_for_hunting(entry, missing_categories):
     score = 0
     title = entry.title.lower()
-
-    # 🎯 PRIORITY: missing categories
+    
+    # Check if this article matches a category we are desperately looking for
     for cat in missing_categories:
         keywords = CATEGORY_KEYWORDS.get(cat, [])
         if any(kw in title for kw in keywords):
-            score += 50
+            score += 50 # High priority boost!
             break
-
-    # 🎓 EXTRA BOOST for campus
-    if any(kw in title for kw in CATEGORY_KEYWORDS['campusinsider']):
-        score += 25
-
-    # 💻 EXTRA BOOST for student tech
-    if any(kw in title for kw in CATEGORY_KEYWORDS['tech']):
-        score += 20
-
-    # 🔥 Trending keywords boost
-    trending_words = ['ai', 'chatgpt', 'iphone', 'election', 'black stars']
-    if any(word in title for word in trending_words):
-        score += 15
-
-    # ⏱️ Freshness
+            
+    # Freshness boost
     if hasattr(entry, 'published_parsed') and entry.published_parsed:
         hours_old = (datetime.utcnow() - datetime.fromtimestamp(mktime(entry.published_parsed))).total_seconds() / 3600
         if hours_old < 2:
             score += 10
-
+            
     return score
 
 def run_bot():
@@ -269,10 +256,8 @@ def run_bot():
             
         if not scr.text or len(scr.text) < 150: continue
             
-        is_campus = (
-                    any(u in entry.link for u in ['ucc.edu', 'knust.edu', 'ug.edu', 'kuulpeeps', 'campusgh'])
-                    or any(kw in entry.title.lower() for kw in CATEGORY_KEYWORDS['campusinsider'])
-        )
+        is_campus = any(u in entry.link for u in ['ucc.edu', 'knust.edu', 'ug.edu', 'kuulpeeps', 'campusgh'])
+        
         print(f"✍️ Writing: {entry.title[:50]}...")
         data = rewrite_article_with_ai(scr.text, "campusinsider" if is_campus else None, missing_categories)
         if not data: continue
