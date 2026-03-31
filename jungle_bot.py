@@ -150,11 +150,11 @@ def rewrite_article_with_ai(raw_text, forced_category, missing_categories):
     6. IMAGE LOGIC: Set 'image_keywords' to "USE_ORIGINAL" if the story is about a specific Ghanaian person/event. Otherwise use generic keywords.
     7. {cat_logic}
     
-    8. VISIBILITY TAGS (CRITICAL): Analyze the story's impact and set boolean (true/false) values for:
-       - 'is_breaking' (Only for urgent, unfolding, time-sensitive news)
-       - 'is_trending' (For highly viral, pop culture, or heavily talked about topics)
-       - 'is_featured' (For major headlines, high-quality deep dives, or front-page worthy news)
-       (An article can have multiple tags set to true if it fits).
+    8. VISIBILITY TAGS (CRITICAL & STRICT): Most daily news is just standard news. By default, set all these tags to FALSE unless the story strictly meets these extremely rare conditions:
+       - 'is_breaking': ONLY set to true for sudden, shocking events that just happened today (e.g., someone was fired, arrested, a sudden strike, or a major accident).
+       - 'is_trending': ONLY set to true for viral social media topics, celebrity drama, or massive sports debates.
+       - 'is_featured': ONLY set to true for massive, exclusive deep-dives, massive university policy shifts, or huge global tech launches. DO NOT use this for standard daily news.
+       *RULE: Limit the article to a MAXIMUM of ONE true tag, or set them all to FALSE if it's just a normal update.*
     
     Return EXACTLY a JSON object with these keys: 
     "title", "content", "excerpt", "image_keywords", "category_slug", "is_breaking", "is_trending", "is_featured".
