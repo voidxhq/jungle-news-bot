@@ -155,7 +155,8 @@ def rewrite_article_with_ai(raw_text, forced_category, missing_categories):
             ],
             model="llama-3.1-8b-instant", # Lightning fast Llama 3.1
             response_format={"type": "json_object"}, # Forces Groq to return perfect JSON
-            temperature=0.7
+            temperature=0.7,
+            max_tokens=4000
         )
         
         clean_text = chat_completion.choices[0].message.content.strip()
