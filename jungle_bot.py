@@ -12,7 +12,7 @@ from time import mktime
 # ==========================================
 # ⚙️ CLOUD CONFIGURATION & GLOBALS
 # ==========================================
-RENDER_API_URL = "https://junglenews.online/api/bot/post-article"
+RENDER_API_URL = "https://www.junglenews.online/api/bot/post-article"
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 PEXELS_API_KEY = os.environ.get("PEXELS_API_KEY")
 
@@ -208,6 +208,7 @@ def run_bot():
     all_entries.sort(key=lambda x: score_entry_for_hunting(x, missing_categories), reverse=True)
     
     posted_count = 0
+    failed_attempts = 0
     user_config = Config()
     user_config.browser_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0'
     
@@ -274,6 +275,10 @@ def run_bot():
                 save_daily_tracker(tracker)
         else:
             print(f"❌ SERVER ERROR {res.status_code}: {res.text}")
+            failed_attempts += 1
+            if failed_attempts >= 3:
+                print("🛑 Too many server rejections. Shutting down to save Groq limits.")
+                break
 
 if __name__ == "__main__":
     run_bot()
