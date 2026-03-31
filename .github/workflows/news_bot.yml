@@ -26,6 +26,11 @@ jobs:
           JUNGLE_BOT_KEY: ${{ secrets.JUNGLE_BOT_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          KEY_NANA_AMA: ${{ secrets.KEY_NANA_AMA }}
+          KEY_EMMANUEL: ${{ secrets.KEY_EMMANUEL }}
+          KEY_SAMUEL: ${{ secrets.KEY_SAMUEL }}
+          KEY_DESMOND: ${{ secrets.KEY_DESMOND }}
+          
         run: python jungle_bot.py
         
       - name: Save Memory to GitHub
