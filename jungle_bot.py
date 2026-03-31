@@ -169,7 +169,7 @@ def rewrite_article_with_ai(raw_text, forced_category, missing_categories):
     """
     try:
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=prompt,
             config=types.GenerateContentConfig(response_mime_type="application/json")
         )
