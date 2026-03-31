@@ -178,6 +178,11 @@ def score_entry_for_hunting(entry, missing_categories):
     return score
 
 def run_bot():
+    # ADD THIS RIGHT AT THE TOP of run_bot()
+    print("🔑 Key audit:")
+    print(f"  JUNGLE_BOT_KEY present: {bool(FALLBACK_KEY)}")
+    for name, key in AUTHOR_KEYS.items():
+        print(f"  {name}: {'✅ present' if key else '❌ MISSING'}")
     print("=========================================")
     print("🚀 BOT IS AWAKE: Starting Virtual Newsroom (Powered by Groq)")
     print("=========================================")
