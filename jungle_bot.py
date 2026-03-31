@@ -141,23 +141,20 @@ def rewrite_article_with_ai(raw_text, forced_category, missing_categories):
     STRICT EDITORIAL GUIDELINES:
     1. PROFESSIONAL BUT RELATABLE: Avoid cheap clickbait, but frame the story so it appeals to university students and Gen-Z tech enthusiasts. 
     2. HEADLINE: Write a strong, engaging headline. It must remain credible but be catchy.
-    3. LENGTH: The 'content' MUST be 800-1200 words. Provide deep context and objective analysis.
-    4. STRUCTURE: 
-       - Start with a "Key Highlights" <ul> list of 3-4 professional bullet points.
-       - Use clean HTML: <p> for paragraphs, <h2> for section headers.
-       - Keep paragraphs short (3-4 sentences).
-    5. EXCERPT: Write a concise, factual summary strictly under 240 characters.
+    3. LENGTH: The 'content' MUST be 800-1200 words.
+    4. STRUCTURE: Start with a "Key Highlights" <ul> list of 3-4 bullet points. Use <p> and <h2> tags.
+    5. EXCERPT: Write a concise summary strictly under 240 characters.
     6. IMAGE LOGIC: Set 'image_keywords' to "USE_ORIGINAL" if the story is about a specific Ghanaian person/event. Otherwise use generic keywords.
     7. {cat_logic}
     
-    8. VISIBILITY TAGS (CRITICAL & STRICT): Most daily news is just standard news. By default, set all these tags to FALSE unless the story strictly meets these extremely rare conditions:
-       - 'is_breaking': ONLY set to true for sudden, shocking events that just happened today (e.g., someone was fired, arrested, a sudden strike, or a major accident).
-       - 'is_trending': ONLY set to true for viral social media topics, celebrity drama, or massive sports debates.
-       - 'is_featured': ONLY set to true for massive, exclusive deep-dives, massive university policy shifts, or huge global tech launches. DO NOT use this for standard daily news.
-       *RULE: Limit the article to a MAXIMUM of ONE true tag, or set them all to FALSE if it's just a normal update.*
+    8. VISIBILITY TAG (CRITICAL): You must categorize the article's importance by choosing EXACTLY ONE of the following strings:
+       - "normal" (DEFAULT. Use this for 90% of articles. Standard daily news, sports updates, normal tech posts.)
+       - "breaking" (ONLY for sudden, time-sensitive emergencies: e.g., an arrest, a sudden firing, a strike.)
+       - "trending" (ONLY for viral social media drama, celebrity beef, or massive sports debates.)
+       - "featured" (ONLY for massive, exclusive deep-dives or extreme national policies. RARE.)
     
     Return EXACTLY a JSON object with these keys: 
-    "title", "content", "excerpt", "image_keywords", "category_slug", "is_breaking", "is_trending", "is_featured".
+    "title", "content", "excerpt", "image_keywords", "category_slug", "visibility_tag".
     
     Source Material:
     {raw_text}
@@ -263,20 +260,21 @@ def run_bot():
             
         img = scr.top_image if data.get("image_keywords") == "USE_ORIGINAL" else (find_clean_image(data.get("image_keywords")) or scr.top_image)
         
-        # 🛡️ THE SAFETY NET
         raw_excerpt = data.get("excerpt")
         safe_excerpt = raw_excerpt if raw_excerpt is not None else "Click to read the full story on Jungle News."
+        
+        # 🚦 TRANSLATE THE VISIBILITY TAG
+        vis_tag = data.get("visibility_tag", "normal").strip().lower()
             
-        # 🔥 UPGRADED PAYLOAD with all Visibility Tags
         payload = {
             "title": data.get("title"),
             "content": data.get("content"),
             "excerpt": safe_excerpt[:280],
             "cover_image": img,
             "category_slug": data.get("category_slug", "news"), 
-            "is_breaking": data.get("is_breaking", False),
-            "is_trending": data.get("is_trending", False),
-            "is_featured": data.get("is_featured", False)
+            "is_breaking": (vis_tag == "breaking"),
+            "is_trending": (vis_tag == "trending"),
+            "is_featured": (vis_tag == "featured")
         }
         
         res = requests.post(RENDER_API_URL, headers={"X-API-Key": JUNGLE_BOT_KEY, "Content-Type": "application/json"}, json=payload)
