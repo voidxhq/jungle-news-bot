@@ -199,11 +199,16 @@ def rewrite_article_with_ai(raw_text, forced_category, missing_categories):
     """
     try:
         chat_completion = client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
-            model="llama-3.1-8b-instant",
-            response_format={"type": "json_object"},
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+            model="llama-3.1-8b-instant", 
+            response_format={"type": "json_object"}, 
             temperature=0.7,
-            max_tokens=8000
+            max_tokens=2500  # <--- CHANGE THIS TO 2500
         )
         clean_text = chat_completion.choices[0].message.content.strip()
         return json.loads(clean_text)
@@ -292,11 +297,9 @@ def run_bot():
         is_campus = any(kw in entry.title.lower() for kw in CATEGORY_KEYWORDS['campusinsider'])
 
         print("🧠 Sending to Groq AI for rewrite...")
-        data = rewrite_article_with_ai(
-            scr.text,
-            "campusinsider" if is_campus else None,
-            missing_categories
-        )
+        # Chopping the text to the first 12,000 characters to prevent API limits
+        safe_text = scr.text[:12000]
+        data = rewrite_article_with_ai(safe_text, "campusinsider" if is_campus else None, missing_categories)
 
         if not data:
             print("❌ AI Failed to return valid JSON. Moving to next article.")
