@@ -208,7 +208,7 @@ def rewrite_article_with_ai(raw_text, forced_category, missing_categories):
             model="llama-3.1-8b-instant", 
             response_format={"type": "json_object"}, 
             temperature=0.7,
-            max_tokens=2500  # <--- CHANGE THIS TO 2500
+            max_tokens=3000  # <--- CHANGE THIS TO 2500
         )
         clean_text = chat_completion.choices[0].message.content.strip()
         return json.loads(clean_text)
@@ -294,12 +294,20 @@ def run_bot():
             print("⚠️  Article text too short or blocked by paywall. Skipping.")
             continue
 
-        is_campus = any(kw in entry.title.lower() for kw in CATEGORY_KEYWORDS['campusinsider'])
+        # New logic: Check Tech FIRST, then Campus
+        title_lower = entry.title.lower()
+        is_tech = any(kw in title_lower for kw in CATEGORY_KEYWORDS['tech'])
+        is_campus = any(kw in title_lower for kw in CATEGORY_KEYWORDS['campusinsider'])
 
-        print("🧠 Sending to Groq AI for rewrite...")
-        # Chopping the text to the first 12,000 characters to prevent API limits
-        safe_text = scr.text[:12000]
-        data = rewrite_article_with_ai(safe_text, "campusinsider" if is_campus else None, missing_categories)
+        # Determine forced category
+        forced_cat = None
+        if is_tech:
+            forced_cat = "tech"
+        elif is_campus:
+            forced_cat = "campusinsider"
+
+        print(f"🧠 Sending to Groq AI for rewrite (Forced Category: {forced_cat or 'None'})...")
+        data = rewrite_article_with_ai(safe_text, forced_cat, missing_categories)
 
         if not data:
             print("❌ AI Failed to return valid JSON. Moving to next article.")
