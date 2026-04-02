@@ -293,7 +293,8 @@ def run_bot():
         if not scr.text or len(scr.text) < 400:
             print("⚠️  Article text too short or blocked by paywall. Skipping.")
             continue
-
+        
+        safe_text = scr.text[:4000]
         # New logic: Check Tech FIRST, then Campus
         title_lower = entry.title.lower()
         is_tech = any(kw in title_lower for kw in CATEGORY_KEYWORDS['tech'])
