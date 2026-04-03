@@ -52,12 +52,83 @@ GHANA_RSS_FEEDS = [
 ]
 
 CATEGORY_KEYWORDS = {
-    'sports':        ['football', 'match', 'coach', 'black stars', 'league', 'goals', 'stadium', 'afcon', 'premier league', 'champions league'],
-    'entertainment': ['shatta', 'stonebwoy', 'sarkodie', 'music', 'movie', 'concert', 'album', 'artist', 'afrobeats'],
-    'campusinsider': ['ucc', 'knust', 'legon', 'ug', 'student', 'campus', 'src', 'casford', 'hostel', 'hall week', 'nugs', 'tertiary'],
-    'tech':          ['ai', 'chatgpt', 'openai', 'app', 'iphone', 'android', 'laptop', 'startup', 'coding', 'developer', 'crypto', 'fintech'],
-    'ghana':         ['mahama', 'bawumia', 'npp', 'ndc', 'accra', 'kumasi', 'ghanaian', 'cedi', 'parliament'],
-    'news':          ['police', 'court', 'killed', 'accident', 'hospital', 'government', 'minister']
+    'sports': [
+        'football', 'match', 'coach', 'black stars', 'league', 'goals',
+        'stadium', 'afcon', 'premier league', 'champions league',
+        'fifa', 'referee', 'transfer', 'injury', 'kickoff', 'midfielder',
+        'striker', 'defender', 'goalkeeper', 'sports ministry',
+        'gfa', 'ghana fa', 'friendly match', 'qualifier', 'world cup'
+    ],
+
+    'entertainment': [
+        'shatta', 'stonebwoy', 'sarkodie', 'music', 'movie', 'concert',
+        'album', 'artist', 'afrobeats', 'dancehall', 'rapper', 'actor', 
+        'actress', 'celebrity', 'showbiz', 'performance', 'event', 'tour', 
+        'festival', 'release', 'single', 'video', 'entertainment news'
+    ],
+
+    'campusinsider': [
+        # Core schools
+        'ucc', 'knust', 'legon', 'university of ghana', 'uew', 'umat', 'upsa', 'gimpa', 'ttu'
+
+        # Students & leadership
+        'student', 'campus', 'src', 'nugs', 'jcr', 'src executives',
+        'src president', 'nugs president', 'hall president', 'src election',
+        'src manifesto', 'campus campaign', 'handover',
+
+        # Academics
+        'lecture', 'midsem', 'end of semester', 'graduation', 'matriculation', 
+        'orientation', 'dean of students', 'vice chancellor', 'academic calendar', 
+        'resit', 'supplementary exams', 'deferred course', 'credit hour', 'cgpa', 'gpa'
+        'level 100', 'level 200', 'level 300', 'level 400', 'freshers',
+
+        # Hostels & halls
+        'hostel', 'traditional hall', 'casford', 'mensah sarbah', 'commonwealth hall',
+        'room allocation', 'campus accommodation', 'hall master', 'hall mistress', 'porter',
+
+        # Events & social life
+        'hall week', 'artists night', 'artiste night', 'jama night', 'hall dinner', 
+        'awards night', 'freshers night', 'welcome bash', 'campus rave', 
+        'campus concert', 'hall week celebration',
+
+        # Student life slang / culture
+        'campus vibes', 'boys boys', 'slay queen', 'academic stress', 'lecturer wahala',
+
+        # Facilities & issues
+        'lecture hall', 'library', 'science market', 'campus wifi', 
+        'eduroam', 'campus water shortage', 'campus power outage', 'dumsor on campus',
+
+        # Religion & groups
+        'campus fellowship', 'campus ministry', 'scripture union', 'pensa',
+
+        # Security & incidents
+        'campus police', 'campus security', 'student robbed', 'campus theft', 'hostel robbery',
+
+        # Misc campus trends
+        'trending on campus', 'viral on campus', 'campus drama', 'student protest', 'campus demonstration'
+    ],
+
+    'tech': [
+        'ai', 'chatgpt', 'openai', 'app', 'iphone', 'android',
+        'laptop', 'startup', 'coding', 'developer', 'crypto', 'fintech',
+        'blockchain', 'software', 'hardware', 'programming',
+        'python', 'javascript', 'web app', 'mobile app',
+        'saas', 'cloud', 'cybersecurity', 'data', 'machine learning'
+    ],
+
+    'ghana': [
+        'mahama', 'bawumia', 'npp', 'ndc', 'accra', 'kumasi',
+        'ghanaian', 'cedi', 'parliament', 'ghana police', 'ecg', 'gridco', 
+        'ec', 'election', 'president', 'vice president', 'minister', 'mp',
+        'district', 'assembly', 'governor', 'policy', 'inflation', 'economy', 'fuel price'
+    ],
+
+    'news': [
+        'police', 'court', 'killed', 'accident', 'hospital',
+        'government', 'minister', 'arrest', 'investigation', 'fire outbreak', 
+        'robbery', 'breaking', 'update', 'incident', 'crime', 'victim',
+        'security', 'press release', 'statement', 'case', 'hearing', 'judgment', 'law'
+    ]
 }
 
 feedparser.USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
@@ -301,11 +372,13 @@ def run_bot():
         is_campus = any(kw in title_lower for kw in CATEGORY_KEYWORDS['campusinsider'])
 
         # Determine forced category
-        forced_cat = None
+        # Ensure tech is strictly prioritized over campus
         if is_tech:
             forced_cat = "tech"
         elif is_campus:
             forced_cat = "campusinsider"
+        else:
+            forced_cat = None # Let the AI decide for news/sports/etc.
 
         print(f"🧠 Sending to Groq AI for rewrite (Forced Category: {forced_cat or 'None'})...")
         data = rewrite_article_with_ai(safe_text, forced_cat, missing_categories)
