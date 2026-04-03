@@ -208,7 +208,7 @@ def rewrite_article_with_ai(raw_text, forced_category, missing_categories):
             model="llama-3.1-8b-instant", 
             response_format={"type": "json_object"}, 
             temperature=0.7,
-            max_tokens=3000  # <--- CHANGE THIS TO 2500
+            max_tokens=3500  # <--- CHANGE THIS TO 2500
         )
         clean_text = chat_completion.choices[0].message.content.strip()
         return json.loads(clean_text)
