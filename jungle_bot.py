@@ -69,17 +69,14 @@ CATEGORY_KEYWORDS = {
 
     'campusinsider': [
         # Core schools
-        'ucc', 'knust', 'legon', 'university of ghana', 'uew', 'umat', 'upsa', 'gimpa', 'ttu'
+        'ucc', 'knust', 'legon', 'university of ghana', 'uew', 'umat', 'upsa', 'gimpa', 'ttu',
 
         # Students & leadership
         'student', 'campus', 'src', 'nugs', 'jcr', 'src executives',
         'src president', 'nugs president', 'hall president', 'src election',
         'src manifesto', 'campus campaign', 'handover',
 
-        # Academics
-        'lecture', 'midsem', 'end of semester', 'graduation', 'matriculation', 
-        'orientation', 'dean of students', 'vice chancellor', 'academic calendar', 
-        'resit', 'supplementary exams', 'deferred course', 'credit hour', 'cgpa', 'gpa'
+        'resit', 'supplementary exams', 'deferred course', 'credit hour', 'cgpa', 'gpa',
         'level 100', 'level 200', 'level 300', 'level 400', 'freshers',
 
         # Hostels & halls
@@ -220,15 +217,9 @@ def find_clean_image(keyword):
         print(f"⚠️ Pexels Image Error: {e}")
     return None
 
-
 # ─── 🤖 AI REWRITE LOGIC ─────────────────────────────────────────────────────
-def rewrite_article_with_ai(raw_text, forced_category, missing_categories):
-    missing_str = ", ".join(missing_categories)
-    cat_logic = (
-        f"Set 'category_slug' to EXACTLY '{forced_category}'."
-        if forced_category
-        else f"Pick the most accurate 'category_slug' from: {REQUIRED_CATEGORIES}. PRIORITY TODAY: [{missing_str}]."
-    )
+def rewrite_article_with_ai(raw_text, forced_category):
+    cat_logic = f"Set 'category_slug' to EXACTLY '{forced_category}'."
 
     prompt = f"""
     You are a senior journalist at Jungle News, Ghana's leading campus news platform.
@@ -279,14 +270,13 @@ def rewrite_article_with_ai(raw_text, forced_category, missing_categories):
             model="llama-3.1-8b-instant", 
             response_format={"type": "json_object"}, 
             temperature=0.7,
-            max_tokens=3500  # <--- CHANGE THIS TO 2500
+            max_tokens=3500 
         )
         clean_text = chat_completion.choices[0].message.content.strip()
         return json.loads(clean_text)
     except Exception as e:
         print(f"❌ Groq AI Error: {e}")
         return None
-
 
 # ─── 🐺 HUNTING LOGIC ────────────────────────────────────────────────────────
 def score_entry_for_hunting(entry, missing_categories):
@@ -366,22 +356,24 @@ def run_bot():
             continue
         
         safe_text = scr.text[:4000]
-        # New logic: Check Tech FIRST, then Campus
         title_lower = entry.title.lower()
-        is_tech = any(kw in title_lower for kw in CATEGORY_KEYWORDS['tech'])
-        is_campus = any(kw in title_lower for kw in CATEGORY_KEYWORDS['campusinsider'])
-
-        # Determine forced category
-        # Ensure tech is strictly prioritized over campus
-        if is_tech:
+        
+        # 🧠 PYTHON CATEGORY LOCK (Takes the choice away from the AI)
+        forced_cat = "news" # Default fallback for general news
+        
+        if any(kw in title_lower for kw in CATEGORY_KEYWORDS['tech']):
             forced_cat = "tech"
-        elif is_campus:
+        elif any(kw in title_lower for kw in CATEGORY_KEYWORDS['campusinsider']):
             forced_cat = "campusinsider"
-        else:
-            forced_cat = None # Let the AI decide for news/sports/etc.
+        elif any(kw in title_lower for kw in CATEGORY_KEYWORDS['sports']):
+            forced_cat = "sports"
+        elif any(kw in title_lower for kw in CATEGORY_KEYWORDS['entertainment']):
+            forced_cat = "entertainment"
+        elif any(kw in title_lower for kw in CATEGORY_KEYWORDS['ghana']):
+            forced_cat = "ghana"
 
-        print(f"🧠 Sending to Groq AI for rewrite (Forced Category: {forced_cat or 'None'})...")
-        data = rewrite_article_with_ai(safe_text, forced_cat, missing_categories)
+        print(f"🧠 Sending to Groq AI for rewrite (Locked Category: {forced_cat})...")
+        data = rewrite_article_with_ai(safe_text, forced_cat)
 
         if not data:
             print("❌ AI Failed to return valid JSON. Moving to next article.")
