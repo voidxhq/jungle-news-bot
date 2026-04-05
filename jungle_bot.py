@@ -6,10 +6,12 @@ import json
 import os
 import random
 from datetime import datetime
+import re  # Added for strict whole-word keyword matching
 
 # ==========================================
 # ⚙️ CLOUD CONFIGURATION & GLOBALS
 # ==========================================
+# Added www. to prevent silent redirects dropping the API keys
 RENDER_API_URL = "https://www.junglenews.online/api/bot/post-article"
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 PEXELS_API_KEY = os.environ.get("PEXELS_API_KEY")
@@ -17,14 +19,13 @@ PEXELS_API_KEY = os.environ.get("PEXELS_API_KEY")
 # 🎭 THE VIRTUAL NEWSROOM KEYS
 AUTHOR_KEYS = {
     "nana":       os.environ.get("KEY_NANA_AMA"),    # entertainment, campusinsider
-    "emmanuel":   os.environ.get("KEY_EMMANUEL"),     # tech
-    "samuel":     os.environ.get("KEY_SAMUEL"),       # news, ghana
-    "desmond":    os.environ.get("KEY_DESMOND"),      # sports
+    "emmanuel":   os.environ.get("KEY_EMMANUEL"),    # tech
+    "samuel":     os.environ.get("KEY_SAMUEL"),      # news, ghana
+    "desmond":    os.environ.get("KEY_DESMOND"),     # sports
     "superadmin": os.environ.get("JUNGLE_BOT_KEY"),  # Prince Eshun — randomly assigned
 }
 
 # 🎲 SUPER ADMIN RANDOM CHANCE (0.0 - 1.0)
-# 0.25 = 25% chance any given post goes to Prince Eshun instead of the category author
 SUPER_ADMIN_CHANCE = 0.25
 
 TRACKER_FILE = "daily_tracker.json"
@@ -57,7 +58,8 @@ CATEGORY_KEYWORDS = {
         'stadium', 'afcon', 'premier league', 'champions league',
         'fifa', 'referee', 'transfer', 'injury', 'kickoff', 'midfielder',
         'striker', 'defender', 'goalkeeper', 'sports ministry',
-        'gfa', 'ghana fa', 'friendly match', 'qualifier', 'world cup'
+        'gfa', 'ghana fa', 'friendly match', 'qualifier', 'world cup',
+        'chelsea', 'arsenal', 'manchester', 'real madrid', 'barcelona'
     ],
 
     'entertainment': [
@@ -68,7 +70,7 @@ CATEGORY_KEYWORDS = {
     ],
 
     'campusinsider': [
-        # Core schools
+        # Core schools (Fixed missing comma)
         'ucc', 'knust', 'legon', 'university of ghana', 'uew', 'umat', 'upsa', 'gimpa', 'ttu',
 
         # Students & leadership
@@ -76,6 +78,9 @@ CATEGORY_KEYWORDS = {
         'src president', 'nugs president', 'hall president', 'src election',
         'src manifesto', 'campus campaign', 'handover',
 
+        # Academics (Fixed missing comma)
+        'lecture', 'midsem', 'end of semester', 'graduation', 'matriculation', 
+        'orientation', 'dean of students', 'vice chancellor', 'academic calendar', 
         'resit', 'supplementary exams', 'deferred course', 'credit hour', 'cgpa', 'gpa',
         'level 100', 'level 200', 'level 300', 'level 400', 'freshers',
 
@@ -136,20 +141,12 @@ client = Groq(api_key=GROQ_API_KEY)
 
 # ─── 🎭 WRITER ROUTING LOGIC ──────────────────────────────────────────────────
 def get_writer_key(category_slug):
-    """
-    Routes to the correct author key for the category.
-    Has a SUPER_ADMIN_CHANCE % probability of routing to Prince Eshun instead,
-    making the super admin appear as an author on random articles.
-    Falls back to super admin if a specific author key is missing.
-    """
-    # 🎲 Random chance to give this post to Prince Eshun (super admin)
     if random.random() < SUPER_ADMIN_CHANCE:
         superadmin_key = AUTHOR_KEYS.get("superadmin")
         if superadmin_key:
             print(f"  🎲 Random pick! This post goes to Prince Eshun (Super Admin).")
             return superadmin_key
 
-    # Otherwise route to the correct category author
     key_map = {
         'entertainment': AUTHOR_KEYS.get("nana"),
         'campusinsider': AUTHOR_KEYS.get("nana"),
@@ -164,12 +161,10 @@ def get_writer_key(category_slug):
     if intended_key:
         return intended_key
 
-    # If no specific author key found, fall back to super admin
     superadmin_key = AUTHOR_KEYS.get("superadmin")
     if superadmin_key:
         print(f"  ↳ No specific author key for '{category_slug}', routing to Prince Eshun (Super Admin).")
         return superadmin_key
-
     return None
 
 
@@ -217,6 +212,7 @@ def find_clean_image(keyword):
         print(f"⚠️ Pexels Image Error: {e}")
     return None
 
+
 # ─── 🤖 AI REWRITE LOGIC ─────────────────────────────────────────────────────
 def rewrite_article_with_ai(raw_text, forced_category):
     cat_logic = f"Set 'category_slug' to EXACTLY '{forced_category}'."
@@ -226,8 +222,8 @@ def rewrite_article_with_ai(raw_text, forced_category):
     Your job is to rewrite the source material into a FULL, ORIGINAL, high-quality news article
     that meets Google AdSense content quality standards.
 
-    ⚠️ LENGTH REQUIREMENT: The 'content' field MUST be at least 800 words. Do NOT produce anything shorter.
-    Count your words before returning. If it is under 800 words, expand with more analysis, background context, quotes, and commentary.
+    ⚠️ LENGTH REQUIREMENT: The 'content' field MUST be at least 600 words. Do NOT produce anything shorter.
+    Count your words before returning. If it is under 600 words, expand with more analysis, background context, quotes, and commentary.
 
     CONTENT QUALITY RULES (AdSense standards):
     - Write in a natural, human journalist voice. Avoid robotic or repetitive phrasing.
@@ -270,13 +266,14 @@ def rewrite_article_with_ai(raw_text, forced_category):
             model="llama-3.1-8b-instant", 
             response_format={"type": "json_object"}, 
             temperature=0.7,
-            max_tokens=3500 
+            max_tokens=3500  # Safe buffer to prevent JSON cutoff
         )
         clean_text = chat_completion.choices[0].message.content.strip()
         return json.loads(clean_text)
     except Exception as e:
         print(f"❌ Groq AI Error: {e}")
         return None
+
 
 # ─── 🐺 HUNTING LOGIC ────────────────────────────────────────────────────────
 def score_entry_for_hunting(entry, missing_categories):
@@ -303,7 +300,7 @@ def run_bot():
         print(f"  {name}: {'✅ present' if key else '❌ MISSING'}")
 
     if not AUTHOR_KEYS.get("superadmin"):
-        print("🛑 CRITICAL: JUNGLE_BOT_KEY (Prince Eshun / Super Admin) is missing. Check your GitHub Secrets & Render env vars.")
+        print("🛑 CRITICAL: JUNGLE_BOT_KEY (Prince Eshun / Super Admin) is missing. Check your GitHub Secrets.")
         return
 
     posted_urls = get_posted_urls()
@@ -357,19 +354,26 @@ def run_bot():
         
         safe_text = scr.text[:4000]
         title_lower = entry.title.lower()
+
+        # Helper function for strictly matching whole words via Regex
+        def has_keyword(kw_list, text):
+            for kw in kw_list:
+                if re.search(r'\b' + re.escape(kw) + r'\b', text):
+                    return True
+            return False
+
+        # 🧠 PYTHON CATEGORY LOCK (Strict Whole-Word Matching)
+        forced_cat = "news" # Default fallback
         
-        # 🧠 PYTHON CATEGORY LOCK (Takes the choice away from the AI)
-        forced_cat = "news" # Default fallback for general news
-        
-        if any(kw in title_lower for kw in CATEGORY_KEYWORDS['tech']):
+        if has_keyword(CATEGORY_KEYWORDS['tech'], title_lower):
             forced_cat = "tech"
-        elif any(kw in title_lower for kw in CATEGORY_KEYWORDS['campusinsider']):
+        elif has_keyword(CATEGORY_KEYWORDS['campusinsider'], title_lower):
             forced_cat = "campusinsider"
-        elif any(kw in title_lower for kw in CATEGORY_KEYWORDS['sports']):
+        elif has_keyword(CATEGORY_KEYWORDS['sports'], title_lower):
             forced_cat = "sports"
-        elif any(kw in title_lower for kw in CATEGORY_KEYWORDS['entertainment']):
+        elif has_keyword(CATEGORY_KEYWORDS['entertainment'], title_lower):
             forced_cat = "entertainment"
-        elif any(kw in title_lower for kw in CATEGORY_KEYWORDS['ghana']):
+        elif has_keyword(CATEGORY_KEYWORDS['ghana'], title_lower):
             forced_cat = "ghana"
 
         print(f"🧠 Sending to Groq AI for rewrite (Locked Category: {forced_cat})...")
