@@ -218,38 +218,58 @@ def rewrite_article_with_ai(raw_text, forced_category):
     cat_logic = f"Set 'category_slug' to EXACTLY '{forced_category}'."
 
     prompt = f"""
-    You are a senior journalist at Jungle News, Ghana's leading campus news platform.
-    Your job is to rewrite the source material into a FULL, ORIGINAL, high-quality news article
-    that meets Google AdSense content quality standards.
+    You are a senior journalist at Jungle News, Ghana's leading digital news platform covering campus life, entertainment, sports, tech, and national news.
+    Your job is to transform the source material into a COMPLETE, ORIGINAL, deeply reported news article that passes Google AdSense's quality review.
 
-    ⚠️ LENGTH REQUIREMENT: The 'content' field MUST be at least 600 words. Do NOT produce anything shorter.
-    Count your words before returning. If it is under 600 words, expand with more analysis, background context, quotes, and commentary.
+    ⚠️ STRICT LENGTH REQUIREMENT: The 'content' field MUST contain at least 900 words of readable text (not counting HTML tags).
+    This is non-negotiable. Count your words. If you are under 900 words, keep writing — add expert context, historical background, reader impact analysis, local relevance, and a forward-looking section.
 
-    CONTENT QUALITY RULES (AdSense standards):
-    - Write in a natural, human journalist voice. Avoid robotic or repetitive phrasing.
-    - Never copy sentences directly from the source. Rewrite everything in fresh language.
-    - Add CONTEXT: explain WHY this news matters to Ghanaian/campus readers.
-    - Add BACKGROUND: 1-2 paragraphs of relevant history or context around the topic.
-    - Add ANALYSIS: what does this mean going forward? What should readers watch out for?
-    - Use VARIED sentence lengths. Mix short punchy sentences with longer explanatory ones.
-    - NO keyword stuffing. Write naturally.
+    ══════════════════════════════════════════
+    GOOGLE ADSENSE QUALITY STANDARDS (FOLLOW ALL):
+    ══════════════════════════════════════════
 
-    REQUIRED HTML STRUCTURE for 'content':
-    1. Open with a <ul> containing 3-4 key highlight bullet points (what happened, who, why it matters).
-    2. Write the intro in 2 <p> tags — hook the reader immediately.
-    3. Use at least 3 <h2> subheadings to break up the article into clear sections.
-    4. Each section should have 2-3 full <p> paragraphs underneath it.
-    5. End with a "What This Means" or "Looking Ahead" <h2> section with your analysis.
-    6. Close with a short <p> conclusion that ties everything together.
+    1. ORIGINALITY — Do NOT copy any sentence from the source. Every sentence must be written fresh in your own words. Restate facts, never reproduce them verbatim.
 
+    2. DEPTH & VALUE — A reader who visits this article must learn MORE than the headline. Include:
+       - Background: 2 paragraphs of history or context that explains the story's roots.
+       - Impact: Who is affected and how? Be specific (students, traders, fans, government, etc.)
+       - Expert angle: Introduce what analysts, officials, or community voices would say — paraphrased from the source or logically inferred from context.
+       - Local relevance: Always tie the story back to Ghana, Ghanaian youth, or campus life where possible.
+
+    3. STRUCTURE — Articles must be well-organised and easy to read. Use proper HTML:
+       - Open with a <ul> of 4 key highlights (what happened, who is involved, why it matters, what comes next).
+       - Follow with 2 engaging <p> intro paragraphs — hook the reader with the most compelling angle.
+       - Use at least 4 <h2> subheadings to divide the article into clear, logical sections.
+       - Write 2 to 4 full <p> paragraphs under EACH <h2> section. Each paragraph must be 3 to 5 sentences long.
+       - Include a dedicated <h2> section titled "What This Means for Ghanaians" or "The Bigger Picture" with your editorial analysis.
+       - End with a <h2> titled "What to Watch Next" or "Looking Ahead" describing what will happen next and why readers should follow the story.
+       - Close with a confident <p> conclusion that summarises the story's importance.
+
+    4. TONE & VOICE — Write like a real journalist, not a robot:
+       - Use varied sentence lengths. Short punchy sentences. Then longer, more explanatory ones that build on what came before.
+       - Be authoritative but approachable. This is news for young, educated Ghanaians.
+       - No robotic repetition. Never start two consecutive paragraphs the same way.
+       - No keyword stuffing. Write naturally as a human would.
+
+    5. ACCURACY & CREDIBILITY — Stick to facts from the source material. Do not invent quotes or statistics. You may frame and expand upon facts, but never fabricate them.
+
+    ══════════════════════════════════════════
     OTHER FIELDS:
-    - HEADLINE: Catchy, specific, and credible. No clickbait.
-    - EXCERPT: A compelling 1-sentence summary under 240 characters.
-    - IMAGE: Set 'image_keywords' to "USE_ORIGINAL" for specific Ghanaian people/events, otherwise provide 2-3 descriptive generic keywords.
+    ══════════════════════════════════════════
+    - HEADLINE (title): Specific, credible, and compelling. Must tell the reader exactly what happened. No vague clickbait. BAD: "Shocking News in Ghana". GOOD: "KNUST Students Protest Fee Hike as VC Promises Urgent Review".
+    - EXCERPT: A single punchy sentence under 240 characters that summarises the full story and makes someone want to read it.
+    - IMAGE: Set 'image_keywords' to "USE_ORIGINAL" if the story is about a specific named Ghanaian person or event with a real photo. Otherwise provide 2 to 3 descriptive generic search keywords (e.g. "university students Ghana campus").
     - CATEGORY: {cat_logic}
-    - VISIBILITY (STRICT): Choose EXACTLY ONE: "normal" (90% of articles), "breaking" (urgent emergencies), "trending" (viral/social media stories), "featured" (exclusive investigations).
+    - VISIBILITY (STRICT RULES): Choose EXACTLY ONE:
+        "normal" for 85% of all articles (standard news, features, updates).
+        "breaking" ONLY for urgent emergencies or major breaking news happening right now.
+        "trending" ONLY for stories already viral on social media.
+        "featured" ONLY for exclusive investigations or in-depth special reports.
 
-    Return EXACTLY a JSON object with NO MARKDOWN, NO code fences, NO extra text outside the JSON:
+    ══════════════════════════════════════════
+    OUTPUT FORMAT:
+    ══════════════════════════════════════════
+    Return EXACTLY one JSON object. NO markdown. NO code fences. NO text before or after the JSON. Just the raw JSON:
     {{"title": "...", "content": "...", "excerpt": "...", "image_keywords": "...", "category_slug": "...", "visibility_tag": "..."}}
 
     Source Material:
@@ -263,10 +283,10 @@ def rewrite_article_with_ai(raw_text, forced_category):
                     "content": prompt,
                 }
             ],
-            model="llama-3.1-8b-instant", 
+            model="llama-3.3-70b-versatile", 
             response_format={"type": "json_object"}, 
             temperature=0.7,
-            max_tokens=3500  # Safe buffer to prevent JSON cutoff
+            max_tokens=5000  # Increased to support 900+ word AdSense-quality articles
         )
         clean_text = chat_completion.choices[0].message.content.strip()
         return json.loads(clean_text)
@@ -352,7 +372,7 @@ def run_bot():
             print("⚠️  Article text too short or blocked by paywall. Skipping.")
             continue
         
-        safe_text = scr.text[:4000]
+        safe_text = scr.text[:6000]  # Increased to give AI more source material for longer rewrites
         title_lower = entry.title.lower()
 
         # Helper function for strictly matching whole words via Regex
