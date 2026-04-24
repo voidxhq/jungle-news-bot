@@ -11,7 +11,6 @@ import re  # Added for strict whole-word keyword matching
 # ==========================================
 # ⚙️ CLOUD CONFIGURATION & GLOBALS
 # ==========================================
-# Added www. to prevent silent redirects dropping the API keys
 RENDER_API_URL = "https://www.junglenews.online/api/bot/post-article"
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 PEXELS_API_KEY = os.environ.get("PEXELS_API_KEY")
@@ -70,43 +69,24 @@ CATEGORY_KEYWORDS = {
     ],
 
     'campusinsider': [
-        # Core schools (Fixed missing comma)
         'ucc', 'knust', 'legon', 'university of ghana', 'uew', 'umat', 'upsa', 'gimpa', 'ttu',
-
-        # Students & leadership
         'student', 'campus', 'src', 'nugs', 'jcr', 'src executives',
         'src president', 'nugs president', 'hall president', 'src election',
         'src manifesto', 'campus campaign', 'handover',
-
-        # Academics (Fixed missing comma)
         'lecture', 'midsem', 'end of semester', 'graduation', 'matriculation', 
         'orientation', 'dean of students', 'vice chancellor', 'academic calendar', 
         'resit', 'supplementary exams', 'deferred course', 'credit hour', 'cgpa', 'gpa',
         'level 100', 'level 200', 'level 300', 'level 400', 'freshers',
-
-        # Hostels & halls
         'hostel', 'traditional hall', 'casford', 'mensah sarbah', 'commonwealth hall',
         'room allocation', 'campus accommodation', 'hall master', 'hall mistress', 'porter',
-
-        # Events & social life
         'hall week', 'artists night', 'artiste night', 'jama night', 'hall dinner', 
         'awards night', 'freshers night', 'welcome bash', 'campus rave', 
         'campus concert', 'hall week celebration',
-
-        # Student life slang / culture
         'campus vibes', 'boys boys', 'slay queen', 'academic stress', 'lecturer wahala',
-
-        # Facilities & issues
         'lecture hall', 'library', 'science market', 'campus wifi', 
         'eduroam', 'campus water shortage', 'campus power outage', 'dumsor on campus',
-
-        # Religion & groups
         'campus fellowship', 'campus ministry', 'scripture union', 'pensa',
-
-        # Security & incidents
         'campus police', 'campus security', 'student robbed', 'campus theft', 'hostel robbery',
-
-        # Misc campus trends
         'trending on campus', 'viral on campus', 'campus drama', 'student protest', 'campus demonstration'
     ],
 
@@ -198,7 +178,7 @@ def save_daily_tracker(data):
 
 # ─── 🔥 IMAGE LOGIC ──────────────────────────────────────────────────────────
 def find_clean_image(keyword):
-    if not keyword or keyword == "USE_ORIGINAL":
+    if not keyword or str(keyword).strip().upper() == "USE_ORIGINAL":
         return None
     headers = {"Authorization": PEXELS_API_KEY}
     url = f"https://api.pexels.com/v1/search?query={keyword} Ghana&per_page=1"
@@ -214,59 +194,47 @@ def find_clean_image(keyword):
 
 
 # ─── 🤖 AI REWRITE LOGIC ─────────────────────────────────────────────────────
-def rewrite_article_with_ai(raw_text, forced_category):
-    cat_logic = f"Set 'category_slug' to EXACTLY '{forced_category}'."
-
+def rewrite_article_with_ai(raw_text):
     prompt = f"""
-    You are a senior journalist at Jungle News, Ghana's leading campus news platform.
-    Your job is to rewrite the source material into a FULL, ORIGINAL, high-quality news article
-    that meets Google AdSense content quality standards.
+    You are a senior journalist at Jungle News, Ghana's leading news platform.
+    Rewrite the source material into a FULL, ORIGINAL, high-quality news article.
 
-    ⚠️ LENGTH REQUIREMENT: The 'content' field MUST be at least 600 words. Do NOT produce anything shorter.
-    Count your words before returning. If it is under 600 words, expand with more analysis, background context, quotes, and commentary.
+    ⚠️ LENGTH REQUIREMENT: The 'content' field MUST be at least 600 words. Expand with more analysis and context.
 
-    CONTENT QUALITY RULES (AdSense standards):
-    - Write in a natural, human journalist voice. Avoid robotic or repetitive phrasing.
-    - Never copy sentences directly from the source. Rewrite everything in fresh language.
-    - Add CONTEXT: explain WHY this news matters to Ghanaian/campus readers.
-    - Add BACKGROUND: 1-2 paragraphs of relevant history or context around the topic.
-    - Add ANALYSIS: what does this mean going forward? What should readers watch out for?
-    - Use VARIED sentence lengths. Mix short punchy sentences with longer explanatory ones.
-    - NO keyword stuffing. Write naturally.
+    CONTENT QUALITY RULES:
+    - Write in a natural, human journalist voice. 
+    - Never copy sentences directly from the source. 
+    - Add CONTEXT: explain WHY this news matters.
+    - Add BACKGROUND: 1-2 paragraphs of relevant history.
+    - Add ANALYSIS: what does this mean going forward?
+    - Use VARIED sentence lengths.
 
     REQUIRED HTML STRUCTURE for 'content':
-    1. Open with a <ul> containing 3-4 key highlight bullet points (what happened, who, why it matters).
-    2. Write the intro in 2 <p> tags — hook the reader immediately.
-    3. Use at least 3 <h2> subheadings to break up the article into clear sections.
+    1. Open with a <ul> containing 3-4 key highlight bullet points.
+    2. Write the intro in 2 <p> tags.
+    3. Use at least 3 <h2> subheadings.
     4. Each section should have 2-3 full <p> paragraphs underneath it.
-    5. End with a "What This Means" or "Looking Ahead" <h2> section with your analysis.
-    6. Close with a short <p> conclusion that ties everything together.
+    5. End with a "What This Means" <h2> section.
 
     OTHER FIELDS:
     - HEADLINE: Catchy, specific, and credible. No clickbait.
     - EXCERPT: A compelling 1-sentence summary under 240 characters.
-    - IMAGE: Set 'image_keywords' to "USE_ORIGINAL" for specific Ghanaian people/events, otherwise provide 2-3 descriptive generic keywords.
-    - CATEGORY: {cat_logic}
-    - VISIBILITY (STRICT): Choose EXACTLY ONE: "normal" (90% of articles), "breaking" (urgent emergencies), "trending" (viral/social media stories), "featured" (exclusive investigations).
+    - IMAGE: Set 'image_keywords' to "USE_ORIGINAL" for specific people/events, otherwise provide generic search keywords.
+    - VISIBILITY: Choose EXACTLY ONE word: "normal", "breaking", "trending", or "featured".
 
-    Return EXACTLY a JSON object with NO MARKDOWN, NO code fences, NO extra text outside the JSON:
-    {{"title": "...", "content": "...", "excerpt": "...", "image_keywords": "...", "category_slug": "...", "visibility_tag": "..."}}
+    Return EXACTLY a JSON object:
+    {{"title": "...", "content": "...", "excerpt": "...", "image_keywords": "...", "visibility_tag": "..."}}
 
     Source Material:
     {raw_text}
     """
     try:
         chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt,
-                }
-            ],
+            messages=[{"role": "user", "content": prompt}],
             model="llama-3.1-8b-instant", 
             response_format={"type": "json_object"}, 
             temperature=0.7,
-            max_tokens=3500  # Safe buffer to prevent JSON cutoff
+            max_tokens=3500 
         )
         clean_text = chat_completion.choices[0].message.content.strip()
         return json.loads(clean_text)
@@ -294,18 +262,11 @@ def run_bot():
     print("🚀 BOT IS AWAKE: Starting Virtual Newsroom (Powered by Groq)")
     print("=========================================")
 
-    # 🔑 Key audit
-    print("🔑 Key audit:")
-    for name, key in AUTHOR_KEYS.items():
-        print(f"  {name}: {'✅ present' if key else '❌ MISSING'}")
-
     if not AUTHOR_KEYS.get("superadmin"):
-        print("🛑 CRITICAL: JUNGLE_BOT_KEY (Prince Eshun / Super Admin) is missing. Check your GitHub Secrets.")
+        print("🛑 CRITICAL: JUNGLE_BOT_KEY is missing.")
         return
 
     posted_urls = get_posted_urls()
-    print(f"\n📁 Memory loaded: {len(posted_urls)} previously posted articles.")
-
     tracker = get_daily_tracker()
     missing_categories = [c for c in REQUIRED_CATEGORIES if c not in tracker['posted_categories']]
     print(f"🎯 Target Categories for today: {missing_categories}")
@@ -321,7 +282,6 @@ def run_bot():
         except:
             pass
 
-    print(f"🔎 Found {len(all_entries)} fresh unposted articles across all feeds.")
     if not all_entries:
         print("💤 No fresh news found. Going back to sleep.")
         return
@@ -335,7 +295,7 @@ def run_bot():
 
     for entry in all_entries:
         if posted_count >= 1:
-            print("✅ Drip-feed quota reached (1 post). Shutting down until next cron cycle.")
+            print("✅ Drip-feed quota reached (1 post). Shutting down.")
             break
 
         print(f"\n🗞️  Attempting to process: {entry.title[:60]}...")
@@ -349,22 +309,20 @@ def run_bot():
             continue
 
         if not scr.text or len(scr.text) < 400:
-            print("⚠️  Article text too short or blocked by paywall. Skipping.")
+            print("⚠️  Article text too short. Skipping.")
             continue
         
         safe_text = scr.text[:4000]
         title_lower = entry.title.lower()
 
-        # Helper function for strictly matching whole words via Regex
+        # 🧠 STRICT PYTHON CATEGORY LOCK
         def has_keyword(kw_list, text):
             for kw in kw_list:
                 if re.search(r'\b' + re.escape(kw) + r'\b', text):
                     return True
             return False
 
-        # 🧠 PYTHON CATEGORY LOCK (Strict Whole-Word Matching)
-        forced_cat = "news" # Default fallback
-        
+        forced_cat = "news" # Default
         if has_keyword(CATEGORY_KEYWORDS['tech'], title_lower):
             forced_cat = "tech"
         elif has_keyword(CATEGORY_KEYWORDS['campusinsider'], title_lower):
@@ -376,40 +334,54 @@ def run_bot():
         elif has_keyword(CATEGORY_KEYWORDS['ghana'], title_lower):
             forced_cat = "ghana"
 
-        print(f"🧠 Sending to Groq AI for rewrite (Locked Category: {forced_cat})...")
-        data = rewrite_article_with_ai(safe_text, forced_cat)
+        print(f"🧠 Sending to Groq AI (Locked Category: {forced_cat})...")
+        # Notice we don't pass forced_cat to the AI anymore!
+        data = rewrite_article_with_ai(safe_text)
 
         if not data:
-            print("❌ AI Failed to return valid JSON. Moving to next article.")
+            print("❌ AI Failed to return valid JSON.")
             continue
 
-        # 🚦 PROCESS PAYLOAD
-        img = (
-            scr.top_image
-            if data.get("image_keywords") == "USE_ORIGINAL"
-            else (find_clean_image(data.get("image_keywords")) or scr.top_image)
-        )
-        vis_tag = data.get("visibility_tag", "normal").lower()
-        cat_slug = data.get("category_slug", "news")
+        # 🚦 ROBUST IMAGE HANDLING
+        original_img = scr.top_image if isinstance(scr.top_image, str) else ""
+        img_keywords = str(data.get("image_keywords", "USE_ORIGINAL")).strip().upper()
+        
+        if img_keywords == "USE_ORIGINAL":
+            final_img = original_img
+        else:
+            final_img = find_clean_image(img_keywords) or original_img
 
+        # 🚦 FUZZY VISIBILITY HANDLING
+        vis_tag = str(data.get("visibility_tag", "normal")).lower()
+        is_breaking = "breaking" in vis_tag
+        is_trending = "trending" in vis_tag
+        is_featured = "featured" in vis_tag
+
+        # 🚦 STRICT PAYLOAD (Category is hardcoded by Python)
         payload = {
             "title":         data.get("title"),
             "content":       data.get("content"),
             "excerpt":       data.get("excerpt", "")[:280],
-            "cover_image":   img,
-            "category_slug": cat_slug,
-            "is_breaking":   (vis_tag == "breaking"),
-            "is_trending":   (vis_tag == "trending"),
-            "is_featured":   (vis_tag == "featured")
+            "cover_image":   final_img,
+            "category_slug": forced_cat,  # <--- ABSOLUTE DICTATOR
+            "is_breaking":   is_breaking,
+            "is_trending":   is_trending,
+            "is_featured":   is_featured
         }
 
-        # 🎭 ROUTE TO CORRECT WRITER KEY (with random super admin chance)
-        current_key = get_writer_key(cat_slug)
+        # 🎭 ROUTE TO CORRECT WRITER KEY 
+        current_key = get_writer_key(forced_cat)
         if not current_key:
-            print(f"❌ CRITICAL: No API key available for '{cat_slug}'. Skipping.")
+            print(f"❌ CRITICAL: No API key available for '{forced_cat}'.")
             continue
 
-        print(f"🌐 Posting to Jungle News Backend (Category: {cat_slug}, Visibility: {vis_tag})...")
+        # Determine tag for terminal print
+        print_tag = "normal"
+        if is_breaking: print_tag = "breaking"
+        elif is_trending: print_tag = "trending"
+        elif is_featured: print_tag = "featured"
+
+        print(f"🌐 Posting to Jungle News Backend (Category: {forced_cat}, Visibility: {print_tag})...")
         res = requests.post(
             RENDER_API_URL,
             headers={"X-API-Key": current_key, "Content-Type": "application/json"},
@@ -421,14 +393,14 @@ def run_bot():
             posted_count += 1
             save_posted_url(entry.link)
 
-            if cat_slug not in tracker['posted_categories']:
-                tracker['posted_categories'].append(cat_slug)
+            if forced_cat not in tracker['posted_categories']:
+                tracker['posted_categories'].append(forced_cat)
                 save_daily_tracker(tracker)
         else:
             print(f"❌ SERVER ERROR {res.status_code}: {res.text}")
             failed_attempts += 1
             if failed_attempts >= 3:
-                print("🛑 Too many server rejections. Shutting down to save Groq limits.")
+                print("🛑 Too many server rejections. Shutting down.")
                 break
 
 
