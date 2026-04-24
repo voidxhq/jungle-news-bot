@@ -196,25 +196,25 @@ def find_clean_image(keyword):
 # ─── 🤖 AI REWRITE LOGIC ─────────────────────────────────────────────────────
 def rewrite_article_with_ai(raw_text):
     prompt = f"""
-    You are a senior journalist at Jungle News, Ghana's leading news platform.
+    You are a professional journalist for Jungle News, writing in the authoritative style of top Ghanaian news outlets like JoyNews, Citi News, or Yen.com.gh.
     Rewrite the source material into a FULL, ORIGINAL, high-quality news article.
 
-    ⚠️ LENGTH REQUIREMENT: The 'content' field MUST be at least 600 words. Expand with more analysis and context.
+    ⚠️ LENGTH REQUIREMENT: The 'content' field MUST be at least 600 words. Expand with real analysis and background context.
 
     CONTENT QUALITY RULES:
-    - Write in a natural, human journalist voice. 
+    - Write objectively like a hard-news reporter. Do NOT ask the reader rhetorical questions.
+    - If the story is international (e.g., US tech, global finance), just report the facts objectively. DO NOT force a fake connection to Ghana or campus life if none exists in the source.
+    - If the story is actually about Ghana or Africa, provide the relevant local context.
     - Never copy sentences directly from the source. 
-    - Add CONTEXT: explain WHY this news matters.
-    - Add BACKGROUND: 1-2 paragraphs of relevant history.
-    - Add ANALYSIS: what does this mean going forward?
-    - Use VARIED sentence lengths.
+    - Add BACKGROUND: 1-2 paragraphs of relevant history about the topic.
+    - Use VARIED sentence lengths. Keep it professional.
 
     REQUIRED HTML STRUCTURE for 'content':
     1. Open with a <ul> containing 3-4 key highlight bullet points.
     2. Write the intro in 2 <p> tags.
     3. Use at least 3 <h2> subheadings.
     4. Each section should have 2-3 full <p> paragraphs underneath it.
-    5. End with a "What This Means" <h2> section.
+    5. End with an objective <h2> section (e.g., "Looking Ahead" or "Market Impact").
 
     OTHER FIELDS:
     - HEADLINE: Catchy, specific, and credible. No clickbait.
