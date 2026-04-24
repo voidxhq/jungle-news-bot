@@ -88,11 +88,11 @@ CATEGORY_KEYWORDS = {
     ],
 
     'campusinsider': [
-        'ucc', 'knust', 'legon', 'university of ghana', 'uew', 'umat', 'upsa', 'gimpa', 'ttu',
+        'ucc', 'knust', 'legon', 'university of ghana', 'uew', 'umat', 'upsa', 'gimpa', 'ttu', 'uds'
         'student', 'campus', 'src', 'nugs', 'jcr', 'src executives',
         'src president', 'nugs president', 'hall president', 'src election',
         'src manifesto', 'campus campaign', 'handover',
-        'lecture', 'midsem', 'end of semester', 'graduation', 'matriculation', 
+        'lecture','lecturers','midsem', 'end of semester', 'graduation', 'matriculation', 
         'orientation', 'dean of students', 'vice chancellor', 'academic calendar', 
         'resit', 'supplementary exams', 'deferred course', 'credit hour', 'cgpa', 'gpa',
         'level 100', 'level 200', 'level 300', 'level 400', 'freshers',
