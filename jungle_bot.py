@@ -32,23 +32,42 @@ POSTED_URLS_FILE = "posted_urls.txt"
 REQUIRED_CATEGORIES = ['news', 'sports', 'entertainment', 'campusinsider', 'tech', 'ghana']
 
 GHANA_RSS_FEEDS = [
-    "https://kuulpeeps.com/feed/",
-    "https://www.campusgh.com/feed/",
-    "https://yfmghana.com/feed/",
-    "https://yen.com.gh/rss/",
-    "https://www.myjoyonline.com/feed/",
-    "https://citinewsroom.com/feed/",
-    "https://pulse.com.gh/news/rss",
-    "https://www.ghanaweb.com/GhanaHomePage/NewsArchive/rss.xml",
-    "https://graphic.com.gh/feed/",
-    "https://www.adomonline.com/feed/",
-    "https://starrfm.com.gh/feed/",
-    "https://techcrunch.com/feed/",
-    "https://thenextweb.com/feed/",
-    "https://www.theverge.com/rss/index.xml",
-    "https://www.engadget.com/rss.xml",
-    "https://techcabal.com/feed/",
-    "https://dev.to/feed"
+    # ---- 📰 General News ----
+    "https://myjoyonline.com/feed",
+    "https://pulse.com.gh/rss",
+    "https://adomonline.com/feed",
+    "https://www.modernghana.com/rss/",
+    "https://www.ghanaweb.com/GhanaHomePage/rss/",
+    "https://peacefmonline.com/feed",
+    "https://citinewsroom.com/feed",
+    "https://aptnewsghana.com/index.php/feed",
+    "https://ghanaiantimes.com.gh/feed",
+    "https://theheraldghana.com/feed",
+    "https://ghanasummary.com/feed",
+    "https://impelnews.net/feed",
+    "https://afiaghana.com/feed",
+    "https://ghheadlines.com/rss",
+
+    # ---- 🎓 Campus / Education ----
+    "https://ghcampus.com/feed",
+    "https://accramail.com/feed",
+    "https://campusnewsofficial.blogspot.com/feeds/posts/default",
+    "https://ghanacampus.blogspot.com/feeds/posts/default",
+
+    # ---- 🎬 Entertainment / Showbiz ----
+    "https://ghanamusic.com/feed",
+    "https://3music.tv/feed",
+    "https://eonlinegh.com/feed",
+    "https://adomonline.com/category/entertainment/feed",
+
+    # ---- ⚽ Sports ----
+    "https://soccanews.com/feed",
+    "https://pulse.com.gh/sports/rss",
+    "https://citinewsroom.com/category/sports/feed",
+
+    # ---- 📱 Tech / Trends ----
+    "https://mfidie.com/feed",
+    "https://fifty7tech.com/feed"
 ]
 
 CATEGORY_KEYWORDS = {
