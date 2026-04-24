@@ -53,151 +53,64 @@ GHANA_RSS_FEEDS = [
 
 CATEGORY_KEYWORDS = {
     'sports': [
-        # Ghana football
-        'black stars', 'gfa', 'ghana fa', 'afcon', 'ghana premier league',
-        'hearts of oak', 'asante kotoko', 'accra lions', 'dreams fc',
-        # General football
-        'football', 'soccer', 'match', 'league', 'goal', 'goals', 'coach',
-        'stadium', 'referee', 'transfer', 'kickoff', 'midfielder', 'striker',
-        'defender', 'goalkeeper', 'friendly match', 'qualifier', 'world cup',
-        'champions league', 'premier league', 'la liga', 'serie a', 'bundesliga',
-        'europa league', 'fifa', 'uefa', 'cap', 'hat trick', 'penalty',
-        # Clubs
-        'chelsea', 'arsenal', 'manchester united', 'manchester city', 'liverpool',
-        'real madrid', 'barcelona', 'atletico', 'psg', 'bayern',
-        # Other sports
-        'athletics', 'basketball', 'boxing', 'tennis', 'cricket', 'rugby',
-        'olympics', 'commonwealth games', 'sports ministry', 'nsa',
-        'sprinter', 'marathon', 'swimmer', 'cyclist', 'medal', 'trophy',
-        'tournament', 'championship', 'sports news',
+        'football', 'match', 'coach', 'black stars', 'league', 'goals',
+        'stadium', 'afcon', 'premier league', 'champions league',
+        'fifa', 'referee', 'transfer', 'injury', 'kickoff', 'midfielder',
+        'striker', 'defender', 'goalkeeper', 'sports ministry',
+        'gfa', 'ghana fa', 'friendly match', 'qualifier', 'world cup',
+        'chelsea', 'arsenal', 'manchester', 'real madrid', 'barcelona'
     ],
 
     'entertainment': [
-        # Ghanaian artists
-        'shatta wale', 'stonebwoy', 'sarkodie', 'medikal', 'efya', 'wendy shay',
-        'kuami eugene', 'kidi', 'king promise', 'gyakie', 'amaarae', 'black sherif',
-        'olamide', 'burna boy', 'wizkid', 'davido', 'tems', 'ayra starr',
-        # Music
-        'music', 'album', 'single', 'song', 'track', 'EP', 'mixtape',
-        'afrobeats', 'afropop', 'dancehall', 'hiplife', 'highlife', 'drill',
-        'rap', 'rapper', 'singer', 'artist', 'producer', 'beat', 'lyrics',
-        'music video', 'bpm', 'vgma', 'grammy', 'bet awards', 'headies',
-        # Film & TV
-        'movie', 'film', 'series', 'nollywood', 'ghallywood', 'netflix',
-        'showmax', 'amazon prime', 'actor', 'actress', 'director', 'premiere',
-        'box office', 'trailer', 'tv show', 'reality show',
-        # General entertainment
-        'concert', 'show', 'performance', 'tour', 'festival', 'event',
-        'celebrity', 'showbiz', 'comedian', 'comedy', 'skit', 'influencer',
-        'tiktok', 'viral video', 'social media star', 'entertainment news',
-        'red carpet', 'fashion', 'style', 'award', 'nomination',
+        'shatta', 'stonebwoy', 'sarkodie', 'music', 'movie', 'concert',
+        'album', 'artist', 'afrobeats', 'dancehall', 'rapper', 'actor', 
+        'actress', 'celebrity', 'showbiz', 'performance', 'event', 'tour', 
+        'festival', 'release', 'single', 'video', 'entertainment news'
     ],
 
     'campusinsider': [
-        # Universities — Ghana
-        'ucc', 'knust', 'legon', 'university of ghana', 'uew', 'umat',
-        'upsa', 'gimpa', 'ttu', 'takoradi technical', 'ho technical',
-        'accra technical', 'central university', 'ashesi', 'regent university',
-        'valley view university', 'kaaf university', 'presbyterian university',
-        'wisconsin university', 'uhas', 'uds', 'university for development',
-        # Student governance
-        'student', 'students', 'campus', 'src', 'nugs', 'jcr',
+        'ucc', 'knust', 'legon', 'university of ghana', 'uew', 'umat', 'upsa', 'gimpa', 'ttu',
+        'student', 'campus', 'src', 'nugs', 'jcr', 'src executives',
         'src president', 'nugs president', 'hall president', 'src election',
-        'src manifesto', 'campus campaign', 'handover', 'src executives',
-        # Academics
-        'lecture', 'lecturer', 'midsem', 'end of semester', 'graduation',
-        'matriculation', 'orientation', 'dean of students', 'vice chancellor',
-        'academic calendar', 'resit', 'supplementary exams', 'cgpa', 'gpa',
+        'src manifesto', 'campus campaign', 'handover',
+        'lecture', 'midsem', 'end of semester', 'graduation', 'matriculation', 
+        'orientation', 'dean of students', 'vice chancellor', 'academic calendar', 
+        'resit', 'supplementary exams', 'deferred course', 'credit hour', 'cgpa', 'gpa',
         'level 100', 'level 200', 'level 300', 'level 400', 'freshers',
-        'national service', 'nyep', 'national youth', 'wassce', 'bece', 'waec',
-        'credit hour', 'deferred course', 'academic stress', 'ghana education',
-        'nsmq', 'national science and maths quiz',
-        # Hostels & halls
-        'hostel', 'traditional hall', 'casford', 'mensah sarbah',
-        'commonwealth hall', 'room allocation', 'campus accommodation',
-        'hall master', 'hall mistress', 'porter',
-        # Events
-        'hall week', 'artiste night', 'artists night', 'jama night',
-        'hall dinner', 'freshers night', 'welcome bash', 'campus rave',
-        'campus concert', 'hall week celebration', 'awards night',
-        # Campus life
-        'campus vibes', 'academic stress', 'lecturer wahala',
-        'campus wifi', 'eduroam', 'campus water', 'campus power',
+        'hostel', 'traditional hall', 'casford', 'mensah sarbah', 'commonwealth hall',
+        'room allocation', 'campus accommodation', 'hall master', 'hall mistress', 'porter',
+        'hall week', 'artists night', 'artiste night', 'jama night', 'hall dinner', 
+        'awards night', 'freshers night', 'welcome bash', 'campus rave', 
+        'campus concert', 'hall week celebration',
+        'campus vibes', 'boys boys', 'slay queen', 'academic stress', 'lecturer wahala',
+        'lecture hall', 'library', 'science market', 'campus wifi', 
+        'eduroam', 'campus water shortage', 'campus power outage', 'dumsor on campus',
         'campus fellowship', 'campus ministry', 'scripture union', 'pensa',
-        'campus police', 'campus security', 'campus theft', 'hostel robbery',
-        'campus drama', 'student protest', 'campus demonstration',
+        'campus police', 'campus security', 'student robbed', 'campus theft', 'hostel robbery',
+        'trending on campus', 'viral on campus', 'campus drama', 'student protest', 'campus demonstration'
     ],
 
     'tech': [
-        # AI & ML — specific terms only (NOT bare 'ai')
-        'artificial intelligence', 'machine learning', 'deep learning',
-        'chatgpt', 'openai', 'gemini', 'claude ai', 'llama', 'grok ai',
-        'generative ai', 'large language model', 'llm', 'neural network',
-        # Devices & hardware
-        'iphone', 'ipad', 'macbook', 'android', 'samsung galaxy', 'pixel phone',
-        'laptop', 'smartwatch', 'smart glasses', 'wearable', 'gadget',
-        'headset', 'earbuds', 'airpods', 'tablet', 'smart tv', 'drone',
-        # Companies (tech context)
-        'google', 'apple', 'microsoft', 'meta', 'amazon', 'tesla',
-        'nvidia', 'qualcomm', 'intel', 'openai', 'anthropic', 'samsung',
-        'huawei', 'xiaomi', 'zipline', 'flutterwave', 'paystack', 'hubtel',
-        'zeepay', 'mtn momo', 'mobile money', 'momo',
-        # Software & development
-        'software', 'hardware', 'app', 'application', 'coding', 'developer',
-        'programming', 'python', 'javascript', 'web app', 'mobile app',
-        'saas', 'cloud computing', 'cybersecurity', 'data breach', 'hacking',
-        'startup', 'tech startup', 'fintech', 'edtech', 'healthtech',
-        # Crypto & web3
-        'crypto', 'bitcoin', 'ethereum', 'blockchain', 'nft', 'web3',
-        # Ghana tech scene
-        'silicon accra', 'ghana tech', 'accra tech', 'data bundle',
-        'mtn ghana', 'vodafone ghana', 'airteltigo', 'e-levy', 'digitization',
-        'tech news', 'technology',
+        'ai', 'chatgpt', 'openai', 'app', 'iphone', 'android',
+        'laptop', 'startup', 'coding', 'developer', 'crypto', 'fintech',
+        'blockchain', 'software', 'hardware', 'programming',
+        'python', 'javascript', 'web app', 'mobile app',
+        'saas', 'cloud', 'cybersecurity', 'data', 'machine learning'
     ],
 
     'ghana': [
-        # Politics & government
-        'mahama', 'bawumia', 'akufo-addo', 'npp', 'ndc', 'parliament',
-        'mp', 'minister', 'vice president', 'president of ghana',
-        'electoral commission', 'election commission', 'ec ghana',
-        'supreme court ghana', 'high court ghana', 'attorney general',
-        'ghana government', 'government of ghana',
-        # Economy
-        'cedi', 'ghana cedi', 'bank of ghana', 'bog', 'inflation ghana',
-        'economy ghana', 'fuel price ghana', 'petroleum', 'cocoa ghana',
-        'gold ghana', 'galamsey', 'ghana revenue', 'gra', 'imo',
-        'imf ghana', 'world bank ghana', 'economic crisis', 'budget ghana',
-        # Places & identity
-        'accra', 'kumasi', 'tamale', 'takoradi', 'cape coast', 'sunyani',
-        'ghanaian', 'ghana', 'greater accra', 'ashanti region', 'northern region',
-        # Utilities & infrastructure
-        'ecg', 'gridco', 'dumsor', 'load shedding', 'ghana water',
-        'gwcl', 'ghana roads', 'highway ghana',
-        # Culture & institutions
-        'chieftaincy', 'paramount chief', 'nana', 'ghana police service',
-        'ghana army', 'ghana navy', 'ghana immigration', 'ghana health service',
-        'ges', 'ghana education service', 'nahco', 'kia airport',
-        # Daily life
-        'trotro', 'okada', 'ghana news', 'ghana today',
+        'mahama', 'bawumia', 'npp', 'ndc', 'accra', 'kumasi',
+        'ghanaian', 'cedi', 'parliament', 'ghana police', 'ecg', 'gridco', 
+        'ec', 'election', 'president', 'vice president', 'minister', 'mp',
+        'district', 'assembly', 'governor', 'policy', 'inflation', 'economy', 'fuel price'
     ],
 
     'news': [
-        # Crime & safety
-        'killed', 'dead', 'murder', 'shooting', 'stabbing', 'robbery',
-        'armed robbery', 'kidnapping', 'kidnapped', 'missing person',
-        'accident', 'crash', 'fire outbreak', 'explosion', 'flood',
-        'disaster', 'emergency', 'rescue', 'victim', 'crime', 'suspect',
-        # Legal
-        'court', 'arrested', 'charged', 'sentenced', 'bail', 'hearing',
-        'judgment', 'verdict', 'lawsuit', 'prosecution', 'acquitted',
-        'detained', 'remanded', 'investigation', 'case',
-        # Health
-        'hospital', 'disease', 'outbreak', 'health alert', 'epidemic',
-        'pandemic', 'vaccine', 'doctor', 'patient', 'medical',
-        # General news
-        'press release', 'statement', 'announcement', 'breaking news',
-        'developing story', 'update', 'confirmed', 'official',
-    ],
+        'police', 'court', 'killed', 'accident', 'hospital',
+        'government', 'minister', 'arrest', 'investigation', 'fire outbreak', 
+        'robbery', 'breaking', 'update', 'incident', 'crime', 'victim',
+        'security', 'press release', 'statement', 'case', 'hearing', 'judgment', 'law'
+    ]
 }
 
 feedparser.USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
@@ -283,75 +196,45 @@ def find_clean_image(keyword):
 # ─── 🤖 AI REWRITE LOGIC ─────────────────────────────────────────────────────
 def rewrite_article_with_ai(raw_text):
     prompt = f"""
-    You are a senior journalist at Jungle News, Ghana's leading digital news platform covering campus life, entertainment, sports, tech, and national news.
-    Your job is to transform the source material into a COMPLETE, ORIGINAL, deeply reported news article that passes Google AdSense's quality review.
+    You are a senior journalist at Jungle News, Ghana's leading news platform.
+    Rewrite the source material into a FULL, ORIGINAL, high-quality news article.
 
-    ⚠️ STRICT LENGTH REQUIREMENT: The 'content' field MUST contain at least 900 words of readable text (not counting HTML tags).
-    This is non-negotiable. Count your words. If you are under 900 words, keep writing — add expert context, historical background, reader impact analysis, local relevance, and a forward-looking section.
+    ⚠️ LENGTH REQUIREMENT: The 'content' field MUST be at least 600 words. Expand with more analysis and context.
 
-    ══════════════════════════════════════════
-    GOOGLE ADSENSE QUALITY STANDARDS (FOLLOW ALL):
-    ══════════════════════════════════════════
+    CONTENT QUALITY RULES:
+    - Write in a natural, human journalist voice. 
+    - Never copy sentences directly from the source. 
+    - Add CONTEXT: explain WHY this news matters.
+    - Add BACKGROUND: 1-2 paragraphs of relevant history.
+    - Add ANALYSIS: what does this mean going forward?
+    - Use VARIED sentence lengths.
 
-    1. ORIGINALITY — Do NOT copy any sentence from the source. Every sentence must be written fresh in your own words. Restate facts, never reproduce them verbatim.
+    REQUIRED HTML STRUCTURE for 'content':
+    1. Open with a <ul> containing 3-4 key highlight bullet points.
+    2. Write the intro in 2 <p> tags.
+    3. Use at least 3 <h2> subheadings.
+    4. Each section should have 2-3 full <p> paragraphs underneath it.
+    5. End with a "What This Means" <h2> section.
 
-    2. DEPTH & VALUE — A reader who visits this article must learn MORE than the headline. Include:
-       - Background: 2 paragraphs of history or context that explains the story's roots.
-       - Impact: Who is affected and how? Be specific (students, traders, fans, government, etc.)
-       - Expert angle: Introduce what analysts, officials, or community voices would say — paraphrased from the source or logically inferred from context.
-       - Local relevance: Always tie the story back to Ghana, Ghanaian youth, or campus life where possible.
-
-    3. STRUCTURE — Articles must be well-organised and easy to read. Use proper HTML:
-       - Open with a <ul> of 4 key highlights (what happened, who is involved, why it matters, what comes next).
-       - Follow with 2 engaging <p> intro paragraphs — hook the reader with the most compelling angle.
-       - Use at least 4 <h2> subheadings to divide the article into clear, logical sections.
-       - Write 2 to 4 full <p> paragraphs under EACH <h2> section. Each paragraph must be 3 to 5 sentences long.
-       - Include a dedicated <h2> section titled "What This Means for Ghanaians" or "The Bigger Picture" with your editorial analysis.
-       - End with a <h2> titled "What to Watch Next" or "Looking Ahead" describing what will happen next and why readers should follow the story.
-       - Close with a confident <p> conclusion that summarises the story's importance.
-
-    4. TONE & VOICE — Write like a real journalist, not a robot:
-       - Use varied sentence lengths. Short punchy sentences. Then longer, more explanatory ones that build on what came before.
-       - Be authoritative but approachable. This is news for young, educated Ghanaians.
-       - No robotic repetition. Never start two consecutive paragraphs the same way.
-       - No keyword stuffing. Write naturally as a human would.
-
-    5. ACCURACY & CREDIBILITY — Stick to facts from the source material. Do not invent quotes or statistics. You may frame and expand upon facts, but never fabricate them.
-
-    ══════════════════════════════════════════
     OTHER FIELDS:
-    ══════════════════════════════════════════
-    - HEADLINE (title): Specific, credible, and compelling. Must tell the reader exactly what happened. No vague clickbait. BAD: "Shocking News in Ghana". GOOD: "KNUST Students Protest Fee Hike as VC Promises Urgent Review".
-    - EXCERPT: A single punchy sentence under 240 characters that summarises the full story and makes someone want to read it.
-    - IMAGE: Set 'image_keywords' to "USE_ORIGINAL" if the story is about a specific named Ghanaian person or event with a real photo. Otherwise provide 2 to 3 descriptive generic search keywords (e.g. "university students Ghana campus").
-    - CATEGORY: {cat_logic}
-    - VISIBILITY (STRICT RULES): Choose EXACTLY ONE:
-        "normal" for 85% of all articles (standard news, features, updates).
-        "breaking" ONLY for urgent emergencies or major breaking news happening right now.
-        "trending" ONLY for stories already viral on social media.
-        "featured" ONLY for exclusive investigations or in-depth special reports.
+    - HEADLINE: Catchy, specific, and credible. No clickbait.
+    - EXCERPT: A compelling 1-sentence summary under 240 characters.
+    - IMAGE: Set 'image_keywords' to "USE_ORIGINAL" for specific people/events, otherwise provide generic search keywords.
+    - VISIBILITY: Choose EXACTLY ONE word: "normal", "breaking", "trending", or "featured".
 
-    ══════════════════════════════════════════
-    OUTPUT FORMAT:
-    ══════════════════════════════════════════
-    Return EXACTLY one JSON object. NO markdown. NO code fences. NO text before or after the JSON. Just the raw JSON:
-    {{"title": "...", "content": "...", "excerpt": "...", "image_keywords": "...", "category_slug": "...", "visibility_tag": "..."}}
+    Return EXACTLY a JSON object:
+    {{"title": "...", "content": "...", "excerpt": "...", "image_keywords": "...", "visibility_tag": "..."}}
 
     Source Material:
     {raw_text}
     """
     try:
         chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt,
-                }
-            ],
-            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            model="llama-3.1-8b-instant", 
             response_format={"type": "json_object"}, 
             temperature=0.7,
-            max_tokens=5000  # Increased to support 900+ word AdSense-quality articles
+            max_tokens=3500 
         )
         clean_text = chat_completion.choices[0].message.content.strip()
         return json.loads(clean_text)
@@ -429,48 +312,31 @@ def run_bot():
             print("⚠️  Article text too short. Skipping.")
             continue
         
-        safe_text = scr.text[:6000]  # Increased to give AI more source material for longer rewrites
+        safe_text = scr.text[:4000]
         title_lower = entry.title.lower()
 
         # 🧠 STRICT PYTHON CATEGORY LOCK
         def has_keyword(kw_list, text):
             for kw in kw_list:
-                if re.search(r'\b' + re.escape(kw) + r'\b', text, re.IGNORECASE):
+                if re.search(r'\b' + re.escape(kw) + r'\b', text):
                     return True
             return False
 
-        def count_keyword_hits(kw_list, text):
-            """Count how many keywords from the list appear in the text."""
-            return sum(
-                1 for kw in kw_list
-                if re.search(r'\b' + re.escape(kw) + r'\b', text, re.IGNORECASE)
-            )
+        forced_cat = "news" # Default
+        if has_keyword(CATEGORY_KEYWORDS['tech'], title_lower):
+            forced_cat = "tech"
+        elif has_keyword(CATEGORY_KEYWORDS['campusinsider'], title_lower):
+            forced_cat = "campusinsider"
+        elif has_keyword(CATEGORY_KEYWORDS['sports'], title_lower):
+            forced_cat = "sports"
+        elif has_keyword(CATEGORY_KEYWORDS['entertainment'], title_lower):
+            forced_cat = "entertainment"
+        elif has_keyword(CATEGORY_KEYWORDS['ghana'], title_lower):
+            forced_cat = "ghana"
 
-        # 🧠 SMART CATEGORY SCORING SYSTEM
-        # Checks title (weighted 3x) + entry summary/description + article body
-        # Picks the category with the most keyword hits — no more wrong defaults
-        entry_summary = getattr(entry, 'summary', '') or ''
-        combined_text = title_lower + ' ' + entry_summary.lower() + ' ' + safe_text.lower()
-
-        DETECTION_CATEGORIES = ['tech', 'campusinsider', 'sports', 'entertainment', 'ghana', 'news']
-
-        scores = {}
-        for cat in DETECTION_CATEGORIES:
-            kw_list = CATEGORY_KEYWORDS.get(cat, [])
-            # Title matches are worth 3x — most reliable signal
-            title_hits = count_keyword_hits(kw_list, title_lower) * 3
-            # Body/summary hits add supporting evidence
-            body_hits = count_keyword_hits(kw_list, combined_text)
-            scores[cat] = title_hits + body_hits
-
-        # Pick highest scoring category; fall back to 'news' only if all scores are 0
-        best_cat = max(scores, key=scores.get)
-        forced_cat = best_cat if scores[best_cat] > 0 else 'news'
-
-        print(f"🧠 Category scores: { {k: v for k, v in sorted(scores.items(), key=lambda x: -x[1])} }")
-        print(f"✅ Locked category: {forced_cat}")
-        print(f"🤖 Sending to Groq AI for rewrite...")
-        data = rewrite_article_with_ai(safe_text, forced_cat)
+        print(f"🧠 Sending to Groq AI (Locked Category: {forced_cat})...")
+        # Notice we don't pass forced_cat to the AI anymore!
+        data = rewrite_article_with_ai(safe_text)
 
         if not data:
             print("❌ AI Failed to return valid JSON.")
