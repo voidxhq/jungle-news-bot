@@ -4,6 +4,7 @@ from newspaper import Article as NewsScraper, Config
 from groq import Groq
 import json
 import os
+import base64
 import random
 from datetime import datetime
 import re  # Added for strict whole-word keyword matching
@@ -14,6 +15,7 @@ import re  # Added for strict whole-word keyword matching
 RENDER_API_URL = "https://www.junglenews.online/api/bot/post-article"
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 PEXELS_API_KEY = os.environ.get("PEXELS_API_KEY")
+IMGBB_API_KEY = os.environ.get("IMGBB_API_KEY")  # Add a free ImgBB API key to your environment variables
 
 # 🎭 THE VIRTUAL NEWSROOM KEYS
 AUTHOR_KEYS = {
@@ -200,7 +202,7 @@ def find_clean_image(keyword):
     if not keyword or str(keyword).strip().upper() == "USE_ORIGINAL":
         return None
     headers = {"Authorization": PEXELS_API_KEY}
-    url = f"https://api.pexels.com/v1/search?query={keyword} Ghana&per_page=1"
+    url = f"https://api.pexels.com/v1/search?query={keyword}&per_page=1"
     try:
         response = requests.get(url, headers=headers, timeout=10)
         if response.status_code == 200:
@@ -210,6 +212,30 @@ def find_clean_image(keyword):
     except Exception as e:
         print(f"⚠️ Pexels Image Error: {e}")
     return None
+
+
+# ─── 🛡️ IMAGE RE-HOSTING LOGIC ────────────────────────────────────────────────
+def rehost_image(image_url):
+    """Downloads an image from the source and re-hosts it on ImgBB to prevent broken images."""
+    if not image_url or not IMGBB_API_KEY:
+        return image_url  # Fallback to the original URL if no API key is set
+        
+    try:
+        response = requests.get(image_url, timeout=10)
+        if response.status_code == 200:
+            image_b64 = base64.b64encode(response.content).decode('utf-8')
+            
+            res = requests.post("https://api.imgbb.com/1/upload", data={
+                "key": IMGBB_API_KEY,
+                "image": image_b64
+            }, timeout=15)
+            
+            if res.status_code == 200:
+                return res.json()["data"]["url"]  # Return the new permanent URL
+    except Exception as e:
+        print(f"⚠️ Re-hosting failed, using original URL. Error: {e}")
+    
+    return image_url
 
 
 # ─── 🤖 AI REWRITE LOGIC ─────────────────────────────────────────────────────
@@ -238,7 +264,7 @@ def rewrite_article_with_ai(raw_text):
     OTHER FIELDS:
     - HEADLINE: Catchy, specific, and credible. No clickbait.
     - EXCERPT: A compelling 1-sentence summary under 240 characters.
-    - IMAGE: Set 'image_keywords' to "USE_ORIGINAL" for specific people/events, otherwise provide generic search keywords.
+    - IMAGE: ALWAYS set 'image_keywords' to "USE_ORIGINAL" to use the real news photo. Only provide generic 1-2 word search keywords if the story has absolutely no specific people/events.
     - VISIBILITY: Choose EXACTLY ONE word: "normal", "breaking", "trending", or "featured".
 
     Return EXACTLY a JSON object:
@@ -362,13 +388,16 @@ def run_bot():
             continue
 
         # 🚦 ROBUST IMAGE HANDLING
-        original_img = scr.top_image if isinstance(scr.top_image, str) else ""
-        img_keywords = str(data.get("image_keywords", "USE_ORIGINAL")).strip().upper()
+        original_img = scr.top_image if isinstance(scr.top_image, str) and scr.top_image else ""
+        img_keywords = str(data.get("image_keywords", "USE_ORIGINAL")).strip()
         
-        if img_keywords == "USE_ORIGINAL":
-            final_img = original_img
+        # Prefer the original scraped image as it's the most accurate representation of the news.
+        # Only fallback to Pexels if the original image is missing.
+        if original_img:
+            print("🛡️ Re-hosting original image to prevent broken links...")
+            final_img = rehost_image(original_img)
         else:
-            final_img = find_clean_image(img_keywords) or original_img
+            final_img = find_clean_image(img_keywords) if img_keywords.upper() != "USE_ORIGINAL" else ""
 
         # 🚦 FUZZY VISIBILITY HANDLING
         vis_tag = str(data.get("visibility_tag", "normal")).lower()
