@@ -90,7 +90,7 @@ CATEGORY_KEYWORDS = {
     ],
 
     'campusinsider': [
-        'ucc', 'knust', 'legon', 'university of ghana', 'uew', 'umat', 'upsa', 'gimpa', 'ttu', 'uds'
+        'ucc', 'knust', 'legon', 'university of ghana', 'uew', 'umat', 'upsa', 'gimpa', 'ttu', 'uds',
         'student', 'campus', 'src', 'nugs', 'jcr', 'src executives',
         'src president', 'nugs president', 'hall president', 'src election',
         'src manifesto', 'campus campaign', 'handover',
@@ -293,10 +293,10 @@ def score_entry_for_hunting(entry, missing_categories):
     score = 0
     title = entry.title.lower()
     for cat in missing_categories:
-        if any(kw in title for kw in CATEGORY_KEYWORDS.get(cat, [])):
+        if any(re.search(r'\b' + re.escape(kw) + r'\b', title) for kw in CATEGORY_KEYWORDS.get(cat, [])):
             score += 50
             break
-    if any(kw in title for kw in CATEGORY_KEYWORDS['campusinsider']):
+    if any(re.search(r'\b' + re.escape(kw) + r'\b', title) for kw in CATEGORY_KEYWORDS['campusinsider']):
         score += 30
     return score
 
@@ -360,25 +360,31 @@ def run_bot():
         safe_text = scr.text[:4000]
         title_lower = entry.title.lower()
 
-        # 🧠 STRICT PYTHON CATEGORY LOCK
-        def has_keyword(kw_list, text):
-            for kw in kw_list:
-                if re.search(r'\b' + re.escape(kw) + r'\b', text):
-                    return True
-            return False
+        # 🧠 INTELLIGENT PYTHON CATEGORY SCORING
+        def get_best_category(title, content):
+            scores = {cat: 0 for cat in CATEGORY_KEYWORDS}
+            title_lower = title.lower()
+            content_lower = content.lower()
+            
+            for cat, kw_list in CATEGORY_KEYWORDS.items():
+                for kw in kw_list:
+                    pattern = r'\b' + re.escape(kw) + r'\b'
+                    # 3 points for a title match
+                    if re.search(pattern, title_lower):
+                        scores[cat] += 3
+                    # 1 point for each occurrence in the body content
+                    scores[cat] += len(re.findall(pattern, content_lower))
+                    
+            best_cat = "news" # Default fallback
+            max_score = 0
+            for cat, score in scores.items():
+                if score > max_score:
+                    max_score = score
+                    best_cat = cat
+            return best_cat, scores
 
-        forced_cat = "news" # Default
-        if has_keyword(CATEGORY_KEYWORDS['tech'], title_lower):
-            forced_cat = "tech"
-        elif has_keyword(CATEGORY_KEYWORDS['campusinsider'], title_lower):
-            forced_cat = "campusinsider"
-        elif has_keyword(CATEGORY_KEYWORDS['sports'], title_lower):
-            forced_cat = "sports"
-        elif has_keyword(CATEGORY_KEYWORDS['entertainment'], title_lower):
-            forced_cat = "entertainment"
-        elif has_keyword(CATEGORY_KEYWORDS['ghana'], title_lower):
-            forced_cat = "ghana"
-
+        forced_cat, cat_scores = get_best_category(entry.title, safe_text)
+        print(f"🧠 Category Scores: {cat_scores}")
         print(f"🧠 Sending to Groq AI (Locked Category: {forced_cat})...")
         # Notice we don't pass forced_cat to the AI anymore!
         data = rewrite_article_with_ai(safe_text)
