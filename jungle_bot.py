@@ -244,14 +244,14 @@ def rewrite_article_with_ai(raw_text):
     You are a professional journalist for Jungle News, writing in the authoritative style of top Ghanaian news outlets like JoyNews, Citi News, or Yen.com.gh.
     Rewrite the source material into a FULL, ORIGINAL, high-quality news article.
 
-    ⚠️ LENGTH REQUIREMENT: The 'content' field MUST be at least 600 words. Expand with real analysis and background context.
+    ⚠️ LENGTH & ADSENSE REQUIREMENT: The 'content' field MUST be at least 600 words. This ensures sufficient original depth for Google AdSense. Ensure the content is brand-safe, objective, and strictly complies with AdSense policies (no excessive violence, explicit content, or hate speech).
 
     CONTENT QUALITY RULES:
     - Write objectively like a hard-news reporter. Do NOT ask the reader rhetorical questions.
     - If the story is international (e.g., US tech, global finance), just report the facts objectively. DO NOT force a fake connection to Ghana or campus life if none exists in the source.
     - If the story is actually about Ghana or Africa, provide the relevant local context.
-    - Never copy sentences directly from the source. 
-    - Add BACKGROUND: 1-2 paragraphs of relevant history about the topic.
+    - Never copy sentences directly from the source to ensure originality. 
+    - Add BACKGROUND: 1 paragraph of relevant history or context about the topic.
     - Use VARIED sentence lengths. Keep it professional.
 
     REQUIRED HTML STRUCTURE for 'content':
@@ -279,7 +279,7 @@ def rewrite_article_with_ai(raw_text):
             model="llama-3.1-8b-instant", 
             response_format={"type": "json_object"}, 
             temperature=0.7,
-            max_tokens=3500 
+            max_tokens=2000 
         )
         clean_text = chat_completion.choices[0].message.content.strip()
         return json.loads(clean_text)
@@ -397,13 +397,26 @@ def run_bot():
         original_img = scr.top_image if isinstance(scr.top_image, str) and scr.top_image else ""
         img_keywords = str(data.get("image_keywords", "USE_ORIGINAL")).strip()
         
+        image_source_text = ""
+
         # Prefer the original scraped image as it's the most accurate representation of the news.
         # Only fallback to Pexels if the original image is missing.
         if original_img:
             print("🛡️ Re-hosting original image to prevent broken links...")
             final_img = rehost_image(original_img)
+            image_source_text = original_img
         else:
             final_img = find_clean_image(img_keywords) if img_keywords.upper() != "USE_ORIGINAL" else ""
+            if final_img:
+                image_source_text = "Pexels"
+
+        # Append image source to the generated content
+        final_content = data.get("content", "")
+        if image_source_text:
+            if image_source_text.startswith("http"):
+                final_content += f'\n<p><em>Image Source: <a href="{image_source_text}" target="_blank">{image_source_text}</a></em></p>'
+            else:
+                final_content += f'\n<p><em>Image Source: {image_source_text}</em></p>'
 
         # 🚦 FUZZY VISIBILITY HANDLING
         vis_tag = str(data.get("visibility_tag", "normal")).lower()
@@ -414,7 +427,7 @@ def run_bot():
         # 🚦 STRICT PAYLOAD (Category is hardcoded by Python)
         payload = {
             "title":         data.get("title"),
-            "content":       data.get("content"),
+            "content":       final_content,
             "excerpt":       data.get("excerpt", "")[:280],
             "cover_image":   final_img,
             "category_slug": forced_cat,  # <--- ABSOLUTE DICTATOR
