@@ -40,4 +40,5 @@ jobs:
           git config --global user.email "bot@junglenews.online"
           git add posted_urls.txt daily_tracker.json
           git diff --quiet && git diff --staged --quiet || git commit -m "🧠 Bot updated its memory"
+          git pull --rebase
           git push
