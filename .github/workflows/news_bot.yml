@@ -2,7 +2,7 @@ name: Jungle News Auto-Bot
 
 on:
   schedule:
-    - cron: '0 */3 * * *'
+    - cron: '0 * * * *' # Runs at the top of every hour
   workflow_dispatch: 
 
 jobs:

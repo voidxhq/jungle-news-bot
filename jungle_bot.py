@@ -6,6 +6,7 @@ import json
 import os
 import base64
 import random
+import time
 from datetime import datetime
 import re  # Added for strict whole-word keyword matching
 
@@ -30,6 +31,7 @@ AUTHOR_KEYS = {
 
 # 🎲 SUPER ADMIN RANDOM CHANCE (0.0 - 1.0)
 SUPER_ADMIN_CHANCE = 0.25
+DAILY_POST_LIMIT = 9  # Set the daily article limit (between 8-10 as requested)
 
 TRACKER_FILE = "daily_tracker.json"
 POSTED_URLS_FILE = "posted_urls.txt"
@@ -318,32 +320,21 @@ client = Groq(api_key=GROQ_API_KEY)
 
 # ─── 🎭 WRITER ROUTING LOGIC ──────────────────────────────────────────────────
 def get_writer_key(category_slug):
-    if random.random() < SUPER_ADMIN_CHANCE:
-        superadmin_key = AUTHOR_KEYS.get("superadmin")
-        if superadmin_key:
-            print(f"  🎲 Random pick! This post goes to Prince Eshun (Super Admin).")
-            return superadmin_key
+    # Rotate admins randomly so it looks like a real human newsroom
+    available_authors = [
+        AUTHOR_KEYS.get("nana"),
+        AUTHOR_KEYS.get("emmanuel"),
+        AUTHOR_KEYS.get("samuel"),
+        AUTHOR_KEYS.get("desmond"),
+        AUTHOR_KEYS.get("superadmin")
+    ]
+    valid_authors = [author for author in available_authors if author]
+    
+    if valid_authors:
+        print("🎭 Randomly rotating admin to post this article...")
+        return random.choice(valid_authors)
 
-    key_map = {
-        "entertainment": AUTHOR_KEYS.get("nana"),
-        "campusinsider": AUTHOR_KEYS.get("nana"),
-        "tech": AUTHOR_KEYS.get("emmanuel"),
-        "news": AUTHOR_KEYS.get("samuel"),
-        "ghana": AUTHOR_KEYS.get("samuel"),
-        "sports": AUTHOR_KEYS.get("desmond"),
-        "trending": AUTHOR_KEYS.get("desmond"),
-    }
-
-    intended_key = key_map.get(category_slug)
-    if intended_key:
-        return intended_key
-
-    superadmin_key = AUTHOR_KEYS.get("superadmin")
-    if superadmin_key:
-        print(
-            f"  ↳ No specific author key for '{category_slug}', routing to Prince Eshun (Super Admin)."
-        )
-        return superadmin_key
+    print("❌ CRITICAL: No valid author keys found.")
     return None
 
 
@@ -367,10 +358,13 @@ def get_daily_tracker():
             with open(TRACKER_FILE, "r") as f:
                 data = json.load(f)
                 if data.get("date") == today:
+                    # Ensure post_count exists for older tracker files
+                    if "post_count" not in data:
+                        data["post_count"] = len(data.get("posted_categories", []))
                     return data
         except:
-            pass
-    return {"date": today, "posted_categories": []}
+            pass # If file doesn't exist, is corrupt, or is for a previous day, reset it.
+    return {"date": today, "posted_categories": [], "post_count": 0}
 
 
 def save_daily_tracker(data):
@@ -503,6 +497,35 @@ def run_bot():
 
     posted_urls = get_posted_urls()
     tracker = get_daily_tracker()
+    post_count = tracker.get("post_count", 0)
+
+    # Check if the daily post limit has been reached
+    if post_count >= DAILY_POST_LIMIT:
+        print(
+            f"🛑 Daily post limit of {DAILY_POST_LIMIT} reached for {tracker['date']}. Going back to sleep."
+        )
+        return
+
+    # 🎲 RANDOM HUMAN-LIKE POSTING LOGIC
+    current_hour = datetime.utcnow().hour
+    hours_left = 24 - current_hour
+    posts_left = DAILY_POST_LIMIT - post_count
+
+    # Dynamically calculate chance to post so we naturally hit the target by the end of the day
+    run_probability = posts_left / hours_left if hours_left > 0 else 1.0
+    run_probability = min(1.0, max(0.1, run_probability)) # Keep probability between 10% and 100%
+
+    print(f"🎲 Random posting chance this hour: {run_probability * 100:.1f}% ({posts_left} posts left, {hours_left} hours left in day)")
+
+    if random.random() > run_probability:
+        print("💤 Bot decided to take a random nap this hour to look more human. Skipping!")
+        return
+
+    # Sleep for a random number of seconds (between 1 and 45 minutes) so the timestamp isn't exactly XX:00
+    sleep_time = random.randint(60, 2700)
+    print(f"⏳ Sleeping for {sleep_time} seconds to randomize the exact posting minute...")
+    time.sleep(sleep_time)
+
     missing_categories = [
         c for c in REQUIRED_CATEGORIES if c not in tracker["posted_categories"]
     ]
@@ -667,9 +690,11 @@ def run_bot():
             posted_count += 1
             save_posted_url(entry.link)
 
+            # Update the daily tracker
+            tracker["post_count"] = tracker.get("post_count", 0) + 1
             if forced_cat not in tracker["posted_categories"]:
                 tracker["posted_categories"].append(forced_cat)
-                save_daily_tracker(tracker)
+            save_daily_tracker(tracker)
         else:
             print(f"❌ SERVER ERROR {res.status_code}: {res.text}")
             failed_attempts += 1
