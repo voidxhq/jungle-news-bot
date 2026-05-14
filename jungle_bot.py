@@ -613,7 +613,7 @@ def run_bot():
                 image_source_text = "Pexels"
 
         # Append image source to the generated content
-        final_content = data.get("content", "")
+        final_content = data.get("content") or ""
         if image_source_text:
             if image_source_text.startswith("http"):
                 final_content += f'\n<p><em>Image Source: <a href="{image_source_text}" target="_blank">{image_source_text}</a></em></p>'
@@ -621,16 +621,16 @@ def run_bot():
                 final_content += f"\n<p><em>Image Source: {image_source_text}</em></p>"
 
         # 🚦 FUZZY VISIBILITY HANDLING
-        vis_tag = str(data.get("visibility_tag", "normal")).lower()
+        vis_tag = str(data.get("visibility_tag") or "normal").lower()
         is_breaking = "breaking" in vis_tag
         is_trending = "trending" in vis_tag
         is_featured = "featured" in vis_tag
 
         # 🚦 STRICT PAYLOAD (Category is hardcoded by Python)
         payload = {
-            "title": data.get("title"),
+            "title": data.get("title") or "Untitled",
             "content": final_content,
-            "excerpt": data.get("excerpt", "")[:280],
+            "excerpt": (data.get("excerpt") or "")[:280],
             "cover_image": final_img,
             "category_slug": forced_cat,  # <--- ABSOLUTE DICTATOR
             "is_breaking": is_breaking,
