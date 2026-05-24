@@ -612,6 +612,15 @@ def run_bot():
             print("❌ AI Failed to return valid JSON.")
             continue
 
+        # 🚦 VALIDATE AI OUTPUT TO PREVENT EMPTY POSTS
+        ai_content = str(data.get("content") or "").strip()
+        ai_excerpt = str(data.get("excerpt") or "").strip()
+        ai_title = str(data.get("title") or "").strip()
+
+        if len(ai_content) < 100 or len(ai_excerpt) < 10 or not ai_title:
+            print("❌ AI returned incomplete data (missing content, excerpt, or title). Skipping.")
+            continue
+
         # 🚦 ROBUST IMAGE HANDLING
         original_img = (
             scr.top_image if isinstance(scr.top_image, str) and scr.top_image else ""
@@ -636,7 +645,7 @@ def run_bot():
                 image_source_text = "Pexels"
 
         # Append image source to the generated content
-        final_content = data.get("content") or ""
+        final_content = ai_content
         if image_source_text:
             if image_source_text.startswith("http"):
                 final_content += f'\n<p><em>Image Source: <a href="{image_source_text}" target="_blank">{image_source_text}</a></em></p>'
@@ -651,9 +660,9 @@ def run_bot():
 
         # 🚦 STRICT PAYLOAD (Category is hardcoded by Python)
         payload = {
-            "title": data.get("title") or "Untitled",
+            "title": ai_title,
             "content": final_content,
-            "excerpt": (data.get("excerpt") or "")[:280],
+            "excerpt": ai_excerpt[:280],
             "cover_image": final_img,
             "category_slug": forced_cat,  # <--- ABSOLUTE DICTATOR
             "is_breaking": is_breaking,
