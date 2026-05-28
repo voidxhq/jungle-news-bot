@@ -284,6 +284,9 @@ CATEGORY_KEYWORDS = {
         "inflation",
         "economy",
         "fuel price",
+        "bill",
+        "strike",
+        "protest",
     ],
     "news": [
         "police",
@@ -309,6 +312,9 @@ CATEGORY_KEYWORDS = {
         "hearing",
         "judgment",
         "law",
+        "bill",
+        "viral",
+        "trending",
     ],
 }
 
@@ -536,7 +542,7 @@ def run_bot():
     for target in GHANA_RSS_FEEDS:
         try:
             feed = feedparser.parse(target)
-            for e in feed.entries[:3]:
+            for e in feed.entries[:15]:
                 if e.link not in posted_urls:
                     all_entries.append(e)
         except:
