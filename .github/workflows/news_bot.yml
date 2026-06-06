@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests feedparser newspaper3k groq lxml_html_clean
+          pip install requests feedparser newspaper3k groq lxml_html_clean cloudinary
 
       - name: Run Jungle Bot
         env:
@@ -31,6 +31,9 @@ jobs:
           KEY_EMMANUEL: ${{ secrets.KEY_EMMANUEL }}
           KEY_SAMUEL: ${{ secrets.KEY_SAMUEL }}
           KEY_DESMOND: ${{ secrets.KEY_DESMOND }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
           
         run: python jungle_bot.py
         

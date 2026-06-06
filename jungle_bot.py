@@ -9,6 +9,8 @@ import random
 import time
 from datetime import datetime
 import re  # Added for strict whole-word keyword matching
+import cloudinary
+import cloudinary.uploader
 
 # ==========================================
 # ⚙️ CLOUD CONFIGURATION & GLOBALS
@@ -16,9 +18,13 @@ import re  # Added for strict whole-word keyword matching
 RENDER_API_URL = "https://www.junglenews.online/api/bot/post-article"
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 PEXELS_API_KEY = os.environ.get("PEXELS_API_KEY")
-IMGBB_API_KEY = os.environ.get(
-    "IMGBB_API_KEY"
-)  # Add a free ImgBB API key to your environment variables
+
+# Configure Cloudinary
+cloudinary.config(
+    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.environ.get('CLOUDINARY_API_KEY'),
+    api_secret=os.environ.get('CLOUDINARY_API_SECRET')
+)
 
 # 🎭 THE VIRTUAL NEWSROOM KEYS
 AUTHOR_KEYS = {
@@ -397,27 +403,17 @@ def find_clean_image(keyword):
 
 # ─── 🛡️ IMAGE RE-HOSTING LOGIC ────────────────────────────────────────────────
 def rehost_image(image_url):
-    """Downloads an image from the source and re-hosts it on ImgBB to prevent broken images."""
-    if not image_url or not IMGBB_API_KEY:
-        return image_url  # Fallback to the original URL if no API key is set
+    """Re-hosts a scraped image directly onto your Cloudinary account."""
+    if not image_url:
+        return image_url
 
     try:
-        response = requests.get(image_url, timeout=10)
-        if response.status_code == 200:
-            image_b64 = base64.b64encode(response.content).decode("utf-8")
-
-            res = requests.post(
-                "https://api.imgbb.com/1/upload",
-                data={"key": IMGBB_API_KEY, "image": image_b64},
-                timeout=15,
-            )
-
-            if res.status_code == 200:
-                return res.json()["data"]["url"]  # Return the new permanent URL
+        # Uploads directly from the external URL to your Cloudinary jungle folder
+        upload_result = cloudinary.uploader.upload(image_url, folder="jungle/articles")
+        return upload_result['secure_url']
     except Exception as e:
-        print(f"⚠️ Re-hosting failed, using original URL. Error: {e}")
-
-    return image_url
+        print(f"⚠️ Cloudinary upload failed, using original URL. Error: {e}")
+        return image_url
 
 
 # ─── 🤖 AI REWRITE LOGIC ─────────────────────────────────────────────────────
