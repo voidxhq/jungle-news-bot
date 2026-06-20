@@ -11,6 +11,10 @@ from datetime import datetime
 import re  # Added for strict whole-word keyword matching
 import cloudinary
 import cloudinary.uploader
+import socket
+
+# Set global default timeout for socket operations to prevent hanging on network calls
+socket.setdefaulttimeout(30)
 
 # ==========================================
 # ⚙️ CLOUD CONFIGURATION & GLOBALS
@@ -524,8 +528,13 @@ def run_bot():
         return
 
     # Sleep for a random number of seconds (between 1 and 45 minutes) so the timestamp isn't exactly XX:00
-    sleep_time = random.randint(60, 2700)
-    print(f"⏳ Sleeping for {sleep_time} seconds to randomize the exact posting minute...")
+    # If running in GitHub Actions, use a very short sleep (5 to 30 seconds) to avoid wasting billing minutes
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        sleep_time = random.randint(5, 30)
+        print(f"⏳ Running in GitHub Actions. Short sleep of {sleep_time} seconds to prevent exact alignment...")
+    else:
+        sleep_time = random.randint(60, 2700)
+        print(f"⏳ Sleeping for {sleep_time} seconds to randomize the exact posting minute...")
     time.sleep(sleep_time)
 
     missing_categories = [
@@ -558,6 +567,7 @@ def run_bot():
     user_config.browser_user_agent = (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"
     )
+    user_config.request_timeout = 15  # Set a request timeout to prevent scraping from hanging
 
     for entry in all_entries:
         if posted_count >= 1:
@@ -694,6 +704,7 @@ def run_bot():
             RENDER_API_URL,
             headers={"X-API-Key": current_key, "Content-Type": "application/json"},
             json=payload,
+            timeout=30,  # Set timeout to prevent hanging if Render API is sleeping or unresponsive
         )
 
         if res.status_code == 201:
