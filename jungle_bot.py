@@ -28,7 +28,7 @@ cloudinary.config(
 
 # 🎭 THE VIRTUAL NEWSROOM KEYS
 AUTHOR_KEYS = {
-    "nana": os.environ.get("KEY_NANA_AMA"),  # entertainment, campusinsider
+    "nana": os.environ.get("KEY_NANA_AMA"),  # entertainment, campuspulse
     "emmanuel": os.environ.get("KEY_EMMANUEL"),  # tech
     "samuel": os.environ.get("KEY_SAMUEL"),  # news, ghana
     "desmond": os.environ.get("KEY_DESMOND"),  # sports
@@ -45,7 +45,7 @@ REQUIRED_CATEGORIES = [
     "news",
     "sports",
     "entertainment",
-    "campusinsider",
+    "campuspulse",
     "tech",
     "ghana",
 ]
@@ -143,7 +143,7 @@ CATEGORY_KEYWORDS = {
         "video",
         "entertainment news",
     ],
-    "campusinsider": [
+    "campuspulse": [
         "ucc",
         "knust",
         "legon",
@@ -481,7 +481,7 @@ def score_entry_for_hunting(entry, missing_categories):
             break
     if any(
         re.search(r"\b" + re.escape(kw) + r"\b", title)
-        for kw in CATEGORY_KEYWORDS["campusinsider"]
+        for kw in CATEGORY_KEYWORDS["campuspulse"]
     ):
         score += 30
     return score
