@@ -1,4 +1,4 @@
-name: Jungle News Auto-Bot
+name: The Gist House Auto-Bot
 
 on:
   schedule:
@@ -23,7 +23,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests feedparser newspaper3k groq lxml_html_clean cloudinary
 
-      - name: Run Jungle Bot
+      - name: Run Gist House Bot
         env:
           JUNGLE_BOT_KEY: ${{ secrets.JUNGLE_BOT_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
@@ -36,14 +36,14 @@ jobs:
           CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
           CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
           
-        run: python jungle_bot.py
+        run: python gist_house_bot.py
         
       - name: Save Memory to GitHub
         env:
           GIT_TERMINAL_INPUT: "0"  # Prevent Git from prompting for terminal input
         run: |
-          git config --global user.name "Jungle-Bot"
-          git config --global user.email "bot@junglenews.online"
+          git config --global user.name "The-Gist-House-Bot"
+          git config --global user.email "bot@thegisthouse.com"
           git add posted_urls.txt daily_tracker.json
           git diff --quiet && git diff --staged --quiet || git commit -m "🧠 Bot updated its memory"
           git pull --rebase -X theirs  # Rebase resolving conflicts by preferring the local updates

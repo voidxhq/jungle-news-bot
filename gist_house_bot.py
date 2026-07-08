@@ -19,7 +19,7 @@ socket.setdefaulttimeout(30)
 # ==========================================
 # ⚙️ CLOUD CONFIGURATION & GLOBALS
 # ==========================================
-RENDER_API_URL = "https://www.junglenews.online/api/bot/post-article"
+RENDER_API_URL = "https://www.thegisthouse.com/api/bot/post-article"
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 PEXELS_API_KEY = os.environ.get("PEXELS_API_KEY")
 
@@ -412,8 +412,8 @@ def rehost_image(image_url):
         return image_url
 
     try:
-        # Uploads directly from the external URL to your Cloudinary jungle folder
-        upload_result = cloudinary.uploader.upload(image_url, folder="jungle/articles")
+        # Uploads directly from the external URL to your Cloudinary thegisthouse folder
+        upload_result = cloudinary.uploader.upload(image_url, folder="thegisthouse/articles")
         return upload_result['secure_url']
     except Exception as e:
         print(f"⚠️ Cloudinary upload failed, using original URL. Error: {e}")
@@ -423,7 +423,7 @@ def rehost_image(image_url):
 # ─── 🤖 AI REWRITE LOGIC ─────────────────────────────────────────────────────
 def rewrite_article_with_ai(raw_text):
     prompt = f"""
-    You are a professional journalist for Jungle News, writing in the authoritative style of top Ghanaian news outlets like JoyNews, Citi News, or Yen.com.gh.
+    You are a professional journalist for The Gist House, writing in the authoritative style of top Ghanaian news outlets like JoyNews, Citi News, or Yen.com.gh.
     Rewrite the source material into a FULL, ORIGINAL, high-quality news article.
 
         ⚠️ GOOGLE ADSENSE "HIGH VALUE" REQUIREMENT: Do NOT generate fluff, repetitive text, or filler. Your goal is to create a deeply engaging, unique article that provides immense value to the reader. Ensure the content is brand-safe, objective, and strictly complies with AdSense policies.
@@ -698,7 +698,7 @@ def run_bot():
             print_tag = "featured"
 
         print(
-            f"🌐 Posting to Jungle News Backend (Category: {forced_cat}, Visibility: {print_tag})..."
+            f"🌐 Posting to The Gist House Backend (Category: {forced_cat}, Visibility: {print_tag})..."
         )
         res = requests.post(
             RENDER_API_URL,
