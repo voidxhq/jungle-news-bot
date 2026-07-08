@@ -599,7 +599,11 @@ def run_bot():
 
             for cat, kw_list in CATEGORY_KEYWORDS.items():
                 for kw in kw_list:
-                    pattern = r"\b" + re.escape(kw) + r"\b"
+                    if kw == "legon":
+                        # Match 'legon' but NOT 'east legon', 'west legon', or 'north legon' (neighborhoods, not the campus)
+                        pattern = r"\b(?<!east\s)(?<!west\s)(?<!north\s)legon\b"
+                    else:
+                        pattern = r"\b" + re.escape(kw) + r"\b"
                     # 3 points for a title match
                     if re.search(pattern, title_lower):
                         scores[cat] += 3
