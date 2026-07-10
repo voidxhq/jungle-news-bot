@@ -89,6 +89,13 @@ GHANA_RSS_FEEDS = [
     "https://fifty7tech.com/feed",
 ]
 
+# ---- 🔍 Google News Search Keywords (Option 1) ----
+GOOGLE_NEWS_KEYWORDS = [
+    '("transfer news" OR "football transfers" OR "basketball" OR "sports analysis" OR "live football" OR "sports update")',
+    '("Ghana celebrities" OR "shatta wale" OR "stonebwoy" OR "sarkodie" OR "celebrity gossip" OR "showbiz")',
+    '("KNUST" OR "Legon" OR "University of Ghana" OR "UCC" OR "campus news" OR "students")',
+]
+
 CATEGORY_KEYWORDS = {
     "sports": [
         "football",
@@ -539,7 +546,20 @@ def run_bot():
 
     all_entries = []
     print("📡 Scanning RSS Feeds...")
-    for target in GHANA_RSS_FEEDS:
+
+    # Combine regular feeds with Google News search query feeds
+    all_targets = list(GHANA_RSS_FEEDS)
+    
+    # 1. Add the main Google News top stories feed for Ghana (covers all major news, politics, business, tech, general sports/entertainment)
+    all_targets.append("https://news.google.com/rss?hl=en-GH&gl=GH&ceid=GH:en")
+    
+    # 2. Add custom topic search feeds
+    for kw in GOOGLE_NEWS_KEYWORDS:
+        encoded_query = requests.utils.quote(kw)
+        google_news_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=en-GH&gl=GH&ceid=GH:en"
+        all_targets.append(google_news_url)
+
+    for target in all_targets:
         try:
             feed = feedparser.parse(target)
             for e in feed.entries[:15]:
@@ -579,7 +599,26 @@ def run_bot():
 
         print(f"\n🗞️  Attempting to process: {entry.title[:60]}...")
 
-        scr = NewsScraper(entry.link, config=user_config)
+        # Resolve Google News redirects if applicable
+        actual_url = entry.link
+        if "news.google.com" in actual_url:
+            print("🔗 Resolving Google News redirect...")
+            try:
+                r = requests.head(actual_url, allow_redirects=True, timeout=10)
+                actual_url = r.url
+            except Exception:
+                try:
+                    r = requests.get(actual_url, allow_redirects=True, timeout=10)
+                    actual_url = r.url
+                except Exception:
+                    pass
+            print(f"🔗 Resolved to: {actual_url}")
+
+            if actual_url in posted_urls:
+                print("⚠️ Resolved URL already posted. Skipping.")
+                continue
+
+        scr = NewsScraper(actual_url, config=user_config)
         try:
             scr.download()
             scr.parse()
@@ -735,7 +774,7 @@ def run_bot():
         if res and res.status_code == 201:
             print(f"🎉 SUCCESS! Published: '{data.get('title')}'")
             posted_count += 1
-            save_posted_url(entry.link)
+            save_posted_url(actual_url)
 
             # Update the daily tracker
             tracker["post_count"] = tracker.get("post_count", 0) + 1
