@@ -702,13 +702,7 @@ def run_bot():
             if final_img:
                 image_source_text = "Pexels"
 
-        # Append image source to the generated content
         final_content = ai_content
-        if image_source_text:
-            if image_source_text.startswith("http"):
-                final_content += f'\n<p><em>Image Source: <a href="{image_source_text}" target="_blank">{image_source_text}</a></em></p>'
-            else:
-                final_content += f"\n<p><em>Image Source: {image_source_text}</em></p>"
 
         # 🚦 FUZZY VISIBILITY HANDLING
         vis_tag = str(data.get("visibility_tag") or "normal").lower()
