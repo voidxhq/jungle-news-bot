@@ -27,6 +27,8 @@ jobs:
         env:
           JUNGLE_BOT_KEY: ${{ secrets.JUNGLE_BOT_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_API_KEY_2: ${{ secrets.GROQ_API_KEY_2 }}
+          GROQ_API_KEY_3: ${{ secrets.GROQ_API_KEY_3 }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           KEY_NANA_AMA: ${{ secrets.KEY_NANA_AMA }}
           KEY_EMMANUEL: ${{ secrets.KEY_EMMANUEL }}

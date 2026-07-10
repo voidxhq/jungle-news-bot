@@ -330,8 +330,18 @@ CATEGORY_KEYWORDS = {
 
 feedparser.USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 
-# Initialize Groq Client
-client = Groq(api_key=GROQ_API_KEY)
+# Initialize Groq Clients from available environment keys (for rotation/fallback)
+def get_groq_clients():
+    keys = [
+        os.environ.get("GROQ_API_KEY"),
+        os.environ.get("GROQ_API_KEY_2"),
+        os.environ.get("GROQ_API_KEY_3"),
+    ]
+    # Remove None, empty, or placeholder strings
+    valid_keys = [k.strip() for k in keys if k and k.strip()]
+    if not valid_keys:
+        print("⚠️ WARNING: No valid GROQ_API_KEY found in environment variables.")
+    return [Groq(api_key=key) for key in valid_keys]
 
 
 # ─── 🎭 WRITER ROUTING LOGIC ──────────────────────────────────────────────────
@@ -423,32 +433,27 @@ def rehost_image(image_url):
 # ─── 🤖 AI REWRITE LOGIC ─────────────────────────────────────────────────────
 def rewrite_article_with_ai(raw_text):
     prompt = f"""
-    You are a professional journalist for The Gist House, writing in the authoritative style of top Ghanaian news outlets like JoyNews, Citi News, or Yen.com.gh.
+    You are a professional journalist for The Gist House, writing in the authoritative, objective style of top Ghanaian and international news outlets (like JoyNews, Citi News, or BBC).
     Rewrite the source material into a FULL, ORIGINAL, high-quality news article.
 
-        ⚠️ GOOGLE ADSENSE "HIGH VALUE" REQUIREMENT: Do NOT generate fluff, repetitive text, or filler. Your goal is to create a deeply engaging, unique article that provides immense value to the reader. Ensure the content is brand-safe, objective, and strictly complies with AdSense policies.
+    ⚠️ GOOGLE ADSENSE "HIGH VALUE INVENTORY" COMPLIANCE:
+    - The content must provide significant unique value. Do NOT simply spin the source material.
+    - Add educational value, context, historical background, or broader implications that do not exist in the source material.
+    - Write objectively and factually. Never ask rhetorical questions or address the reader directly.
+    - Eliminate all AI tells, fluff, and robotic transition words (e.g., avoid "in conclusion", "it is important to note", "moreover", "furthermore", "lastly", "consequently", "testament to").
+    - Ensure zero formatting artifacts or meta-explanations.
 
-    CONTENT QUALITY RULES:
-    - Write objectively like a hard-news reporter. Do NOT ask the reader rhetorical questions.
-        - DO NOT pad the article to reach a specific word count. If the source material is brief, add value by providing deep historical background, market implications, or broader context related to the topic.
-    - If the story is international (e.g., US tech, global finance), just report the facts objectively. DO NOT force a fake connection to Ghana or campus life if none exists in the source.
-    - If the story is actually about Ghana or Africa, provide the relevant local context.
-    - Never copy sentences directly from the source to ensure originality. 
-        - Add a dedicated "Background & Context" section to provide rich educational value.
-        - Add a "Why This Matters" or "Broader Implications" section to give the reader analytical insights they wouldn't get from a standard news site.
-    - Use VARIED sentence lengths. Keep it professional.
-
-    REQUIRED HTML STRUCTURE for 'content':
-        1. Open with a <h2> Key Takeaways </h2> followed by a <ul> containing 3-4 factual bullet points.
+    REQUIRED HTML STRUCTURE FOR 'content':
+    1. Open with a <h2> Key Takeaways </h2> followed by a <ul> containing 3-4 factual bullet points.
     2. Write the intro in 2 <p> tags.
-    3. Use at least 3 <h2> subheadings.
-    4. Each section should have 2-3 full <p> paragraphs underneath it.
-    5. End with an objective <h2> section (e.g., "Looking Ahead" or "Market Impact").
+    3. Use at least 3 <h2> subheadings representing different sections (e.g., "Background & Context", "Key Findings", "Broader Implications", "Looking Ahead").
+    4. Each section must have 2-3 full <p> paragraphs containing deep analytical context.
+    5. End with an objective <h2> section (e.g., "Looking Ahead" or "Market Impact") with 1-2 paragraphs.
 
     OTHER FIELDS:
-    - HEADLINE: Catchy, specific, and credible. No clickbait.
+    - HEADLINE: Catchy, specific, and highly credible. Strictly no clickbait.
     - EXCERPT: A compelling 1-sentence summary under 240 characters.
-    - IMAGE: ALWAYS set 'image_keywords' to "USE_ORIGINAL" to use the real news photo. Only provide generic 1-2 word search keywords if the story has absolutely no specific people/events.
+    - IMAGE: Set 'image_keywords' to "USE_ORIGINAL" to use the real news photo.
     - VISIBILITY: Choose EXACTLY ONE word: "normal", "breaking", "trending", or "featured".
 
     Return EXACTLY a JSON object:
@@ -457,19 +462,29 @@ def rewrite_article_with_ai(raw_text):
     Source Material:
     {raw_text}
     """
-    try:
-        chat_completion = client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
-            model="llama-3.1-8b-instant",
-            response_format={"type": "json_object"},
-            temperature=0.7,
-            max_tokens=2000,
-        )
-        clean_text = chat_completion.choices[0].message.content.strip()
-        return json.loads(clean_text)
-    except Exception as e:
-        print(f"❌ Groq AI Error: {e}")
+    clients = get_groq_clients()
+    if not clients:
+        print("❌ CRITICAL: No Groq API clients initialized.")
         return None
+
+    for idx, client_instance in enumerate(clients):
+        try:
+            print(f"🧠 Attempting AI rewrite with Groq client #{idx + 1}...")
+            chat_completion = client_instance.chat.completions.create(
+                messages=[{"role": "user", "content": prompt}],
+                model="llama-3.1-8b-instant",
+                response_format={"type": "json_object"},
+                temperature=0.7,
+                max_tokens=2000,
+            )
+            clean_text = chat_completion.choices[0].message.content.strip()
+            return json.loads(clean_text)
+        except Exception as e:
+            print(f"⚠️ Groq AI Error with client #{idx + 1}: {e}")
+            continue
+
+    print("❌ ALL Groq API clients failed to complete the request.")
+    return None
 
 
 # ─── 🐺 HUNTING LOGIC ────────────────────────────────────────────────────────
