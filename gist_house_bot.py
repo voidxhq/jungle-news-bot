@@ -41,7 +41,7 @@ AUTHOR_KEYS = {
 
 # 🎲 SUPER ADMIN RANDOM CHANCE (0.0 - 1.0)
 SUPER_ADMIN_CHANCE = 0.25
-DAILY_POST_LIMIT = 9  # Set the daily article limit (between 8-10 as requested)
+DAILY_POST_LIMIT = 48  # Set the daily article limit (up to 48 posts per day for real-time coverage)
 
 TRACKER_FILE = "daily_tracker.json"
 POSTED_URLS_FILE = "posted_urls.txt"
@@ -512,29 +512,9 @@ def run_bot():
         )
         return
 
-    # 🎲 RANDOM HUMAN-LIKE POSTING LOGIC
-    current_hour = datetime.utcnow().hour
-    hours_left = 24 - current_hour
-    posts_left = DAILY_POST_LIMIT - post_count
-
-    # Dynamically calculate chance to post so we naturally hit the target by the end of the day
-    run_probability = posts_left / hours_left if hours_left > 0 else 1.0
-    run_probability = min(1.0, max(0.1, run_probability)) # Keep probability between 10% and 100%
-
-    print(f"🎲 Random posting chance this hour: {run_probability * 100:.1f}% ({posts_left} posts left, {hours_left} hours left in day)")
-
-    if random.random() > run_probability:
-        print("💤 Bot decided to take a random nap this hour to look more human. Skipping!")
-        return
-
-    # Sleep for a random number of seconds (between 1 and 45 minutes) so the timestamp isn't exactly XX:00
-    # If running in GitHub Actions, use a very short sleep (5 to 30 seconds) to avoid wasting billing minutes
-    if os.environ.get("GITHUB_ACTIONS") == "true":
-        sleep_time = random.randint(5, 30)
-        print(f"⏳ Running in GitHub Actions. Short sleep of {sleep_time} seconds to prevent exact alignment...")
-    else:
-        sleep_time = random.randint(60, 2700)
-        print(f"⏳ Sleeping for {sleep_time} seconds to randomize the exact posting minute...")
+    # Sleep for a random number of seconds (between 1 and 8 minutes) so the timestamp isn't exactly aligned to the schedule
+    sleep_time = random.randint(60, 480)
+    print(f"⏳ Sleeping for {sleep_time} seconds to randomize the posting minute (human-like behavior)...")
     time.sleep(sleep_time)
 
     missing_categories = [
@@ -557,9 +537,17 @@ def run_bot():
         print("💤 No fresh news found. Going back to sleep.")
         return
 
-    all_entries.sort(
-        key=lambda x: score_entry_for_hunting(x, missing_categories), reverse=True
-    )
+    def get_entry_timestamp(e):
+        for field in ("published_parsed", "updated_parsed"):
+            t_struct = getattr(e, field, None)
+            if t_struct:
+                try:
+                    return time.mktime(t_struct)
+                except Exception:
+                    pass
+        return 0
+
+    all_entries.sort(key=get_entry_timestamp, reverse=True)
 
     posted_count = 0
     failed_attempts = 0
