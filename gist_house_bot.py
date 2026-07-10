@@ -707,14 +707,32 @@ def run_bot():
         print(
             f"🌐 Posting to The Gist House Backend (Category: {forced_cat}, Visibility: {print_tag})..."
         )
-        res = requests.post(
-            RENDER_API_URL,
-            headers={"X-API-Key": current_key, "Content-Type": "application/json"},
-            json=payload,
-            timeout=30,  # Set timeout to prevent hanging if Render API is sleeping or unresponsive
-        )
+        res = None
+        try:
+            res = requests.post(
+                RENDER_API_URL,
+                headers={"X-API-Key": current_key, "Content-Type": "application/json"},
+                json=payload,
+                timeout=30,  # Set timeout to prevent hanging if Render API is sleeping or unresponsive
+            )
+        except Exception as e:
+            print(f"⚠️ Error during API post: {e}")
 
-        if res.status_code == 201:
+        # If unauthorized (401), try falling back to the superadmin key
+        superadmin_key = AUTHOR_KEYS.get("superadmin")
+        if (not res or res.status_code == 401) and superadmin_key and current_key != superadmin_key:
+            print("⚠️ Rotated key returned 401 Unauthorized. Retrying with Superadmin Key...")
+            try:
+                res = requests.post(
+                    RENDER_API_URL,
+                    headers={"X-API-Key": superadmin_key, "Content-Type": "application/json"},
+                    json=payload,
+                    timeout=30,
+                )
+            except Exception as e:
+                print(f"⚠️ Error during API post fallback: {e}")
+
+        if res and res.status_code == 201:
             print(f"🎉 SUCCESS! Published: '{data.get('title')}'")
             posted_count += 1
             save_posted_url(entry.link)
@@ -725,7 +743,9 @@ def run_bot():
                 tracker["posted_categories"].append(forced_cat)
             save_daily_tracker(tracker)
         else:
-            print(f"❌ SERVER ERROR {res.status_code}: {res.text}")
+            status_code = res.status_code if res else "No Response"
+            response_text = res.text if res else ""
+            print(f"❌ SERVER ERROR {status_code}: {response_text}")
             failed_attempts += 1
             if failed_attempts >= 3:
                 print("🛑 Too many server rejections. Shutting down.")
