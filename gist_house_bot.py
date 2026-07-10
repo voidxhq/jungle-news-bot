@@ -587,7 +587,7 @@ def run_bot():
             print("⚠️  Failed to scrape article text. Skipping.")
             continue
 
-        if not scr.text or len(scr.text) < 1200:
+        if not scr.text or len(scr.text) < 400:
             print("⚠️  Article text too short. Skipping.")
             continue
 
