@@ -58,6 +58,7 @@ GHANA_RSS_FEEDS = [
     # ---- 📰 General News ----
     "https://myjoyonline.com/feed",
     "https://pulse.com.gh/rss",
+    "https://pulse.com.gh/news/rss",
     "https://adomonline.com/feed",
     "https://www.modernghana.com/rss/",
     "https://www.ghanaweb.com/GhanaHomePage/rss/",
@@ -76,24 +77,31 @@ GHANA_RSS_FEEDS = [
     "https://campusnewsofficial.blogspot.com/feeds/posts/default",
     "https://ghanacampus.blogspot.com/feeds/posts/default",
     # ---- 🎬 Entertainment / Showbiz ----
+    "https://pulse.com.gh/entertainment/rss",
+    "https://pulse.com.gh/lifestyle/rss",
+    "https://myjoyonline.com/category/entertainment/feed/",
     "https://ghanamusic.com/feed",
     "https://3music.tv/feed",
     "https://eonlinegh.com/feed",
     "https://adomonline.com/category/entertainment/feed",
     # ---- ⚽ Sports ----
-    "https://soccanews.com/feed",
     "https://pulse.com.gh/sports/rss",
+    "https://myjoyonline.com/category/sports/feed/",
+    "https://soccanews.com/feed",
     "https://citinewsroom.com/category/sports/feed",
     # ---- 📱 Tech / Trends ----
+    "https://pulse.com.gh/business/rss",
+    "https://myjoyonline.com/category/technology/feed/",
     "https://mfidie.com/feed",
     "https://fifty7tech.com/feed",
 ]
 
 # ---- 🔍 Google News Search Keywords (Option 1) ----
 GOOGLE_NEWS_KEYWORDS = [
-    '("transfer news" OR "football transfers" OR "basketball" OR "sports analysis" OR "live football" OR "sports update")',
-    '("Ghana celebrities" OR "shatta wale" OR "stonebwoy" OR "sarkodie" OR "celebrity gossip" OR "showbiz")',
-    '("KNUST" OR "Legon" OR "University of Ghana" OR "UCC" OR "campus news" OR "students")',
+    '("transfer news" OR "football transfers" OR "basketball" OR "sports analysis" OR "live football" OR "sports update" OR "Black Stars")',
+    '("Ghana celebrities" OR "shatta wale" OR "stonebwoy" OR "sarkodie" OR "celebrity gossip" OR "showbiz" OR "Ghana music")',
+    '("KNUST" OR "Legon" OR "University of Ghana" OR "UCC" OR "campus news" OR "students" OR "NUGS" OR "SRC")',
+    '("Ghana tech" OR "fintech" OR "technology Ghana" OR "startups" OR "cybersecurity" OR "AI Ghana" OR "smartphone")',
 ]
 
 CATEGORY_KEYWORDS = {
@@ -460,11 +468,18 @@ def rewrite_article_with_ai(raw_text):
     OTHER FIELDS:
     - HEADLINE: Catchy, specific, and highly credible. Strictly no clickbait.
     - EXCERPT: A compelling 1-sentence summary under 240 characters.
+    - CATEGORY: Choose EXACTLY ONE category_slug from this list: ["campuspulse", "sports", "entertainment", "tech", "ghana", "news"].
+        * "campuspulse": If about students, universities (UCC, KNUST, Legon, etc.), exams, campus life, hostels, SRC, NUGS, or academic events.
+        * "sports": If about football, Black Stars, Premier League, AFCON, basketball, boxing, matches, or athletes.
+        * "entertainment": If about music, celebrities, movies, show business, lifestyle, artists, or pop culture.
+        * "tech": If about technology, smartphones, AI, apps, software, gadgets, internet, cybersecurity, or startups.
+        * "ghana": If about Ghanaian politics, government, Parliament, Cedi, national events, or local affairs.
+        * "news": If general world or national news.
     - IMAGE: Set 'image_keywords' to "USE_ORIGINAL" to use the real news photo.
     - VISIBILITY: Choose EXACTLY ONE word: "normal", "breaking", "trending", or "featured".
 
     Return EXACTLY a JSON object:
-    {{"title": "...", "content": "...", "excerpt": "...", "image_keywords": "...", "visibility_tag": "..."}}
+    {{"title": "...", "content": "...", "excerpt": "...", "category_slug": "...", "image_keywords": "...", "visibility_tag": "..."}}
 
     Source Material:
     {raw_text}
@@ -661,14 +676,26 @@ def run_bot():
             return best_cat, scores
 
         forced_cat, cat_scores = get_best_category(entry.title, safe_text)
-        print(f"🧠 Category Scores: {cat_scores}")
-        print(f"🧠 Sending to Groq AI (Locked Category: {forced_cat})...")
-        # Notice we don't pass forced_cat to the AI anymore!
+        print(f"🧠 Python Keyword Scores: {cat_scores}")
+        print(f"🧠 Sending to Groq AI for rewriting & category selection...")
         data = rewrite_article_with_ai(safe_text)
 
         if not data:
             print("❌ AI Failed to return valid JSON.")
             continue
+
+        # 🚦 AI CATEGORY DETERMINATION WITH KEYWORD FALLBACK
+        ai_cat = str(data.get("category_slug") or "").strip().lower()
+        if ai_cat in ["campus", "campuspulse"]:
+            selected_cat = "campuspulse"
+        elif ai_cat in ["sports", "entertainment", "tech", "ghana", "news"]:
+            selected_cat = ai_cat
+        elif forced_cat and forced_cat != "news":
+            selected_cat = forced_cat
+        else:
+            selected_cat = "news"
+
+        print(f"🎯 Final Selected Category: '{selected_cat}' (AI: '{ai_cat}', Keyword score: '{forced_cat}')")
 
         # 🚦 VALIDATE AI OUTPUT TO PREVENT EMPTY POSTS
         ai_content = str(data.get("content") or "").strip()
@@ -710,22 +737,22 @@ def run_bot():
         is_trending = "trending" in vis_tag
         is_featured = "featured" in vis_tag
 
-        # 🚦 STRICT PAYLOAD (Category is hardcoded by Python)
+        # 🚦 DYNAMIC PAYLOAD (Category selected by AI + Keyword fallback)
         payload = {
             "title": ai_title,
             "content": final_content,
             "excerpt": ai_excerpt[:280],
             "cover_image": final_img,
-            "category_slug": forced_cat,  # <--- ABSOLUTE DICTATOR
+            "category_slug": selected_cat,
             "is_breaking": is_breaking,
             "is_trending": is_trending,
             "is_featured": is_featured,
         }
 
         # 🎭 ROUTE TO CORRECT WRITER KEY
-        current_key = get_writer_key(forced_cat)
+        current_key = get_writer_key(selected_cat)
         if not current_key:
-            print(f"❌ CRITICAL: No API key available for '{forced_cat}'.")
+            print(f"❌ CRITICAL: No API key available for '{selected_cat}'.")
             continue
 
         # Determine tag for terminal print
