@@ -100,7 +100,8 @@ GHANA_RSS_FEEDS = [
 GOOGLE_NEWS_KEYWORDS = [
     '("transfer news" OR "football transfers" OR "basketball" OR "sports analysis" OR "live football" OR "sports update" OR "Black Stars")',
     '("Ghana celebrities" OR "shatta wale" OR "stonebwoy" OR "sarkodie" OR "celebrity gossip" OR "showbiz" OR "Ghana music")',
-    '("KNUST" OR "Legon" OR "University of Ghana" OR "UCC" OR "campus news" OR "students" OR "NUGS" OR "SRC")',
+    '("KNUST" OR "Legon" OR "University of Ghana" OR "UCC" OR "campus news" OR "students" OR "NUGS" OR "SRC" OR "UEW" OR "UPSA" OR "UMaT" OR "TTU" OR "UDS" OR "campus gossip" OR "university matriculation" OR "university graduation" OR "university admission")',
+    '("Ghana university" OR "Ghana campus" OR "Ghana tertiary" OR "university students Ghana" OR "hostel Ghana" OR "academic calendar Ghana")',
     '("Ghana tech" OR "fintech" OR "technology Ghana" OR "startups" OR "cybersecurity" OR "AI Ghana" OR "smartphone")',
 ]
 
