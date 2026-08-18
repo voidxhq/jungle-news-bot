@@ -12,6 +12,8 @@ import re  # Added for strict whole-word keyword matching
 import cloudinary
 import cloudinary.uploader
 import socket
+from google.oauth2 import service_account
+from google.auth.transport.requests import AuthorizedSession
 
 # Set global default timeout for socket operations to prevent hanging on network calls
 socket.setdefaulttimeout(30)
@@ -98,11 +100,12 @@ GHANA_RSS_FEEDS = [
 
 # ---- 🔍 Google News Search Keywords (Option 1) ----
 GOOGLE_NEWS_KEYWORDS = [
-    '("transfer news" OR "football transfers" OR "basketball" OR "sports analysis" OR "live football" OR "sports update" OR "Black Stars")',
-    '("Ghana celebrities" OR "shatta wale" OR "stonebwoy" OR "sarkodie" OR "celebrity gossip" OR "showbiz" OR "Ghana music")',
+    '("transfer news" OR "football transfers" OR "basketball" OR "sports analysis" OR "live football" OR "sports update" OR "Black Stars" OR "Premier League" OR "Chelsea" OR "Arsenal")',
+    '("Ghana celebrities" OR "shatta wale" OR "stonebwoy" OR "sarkodie" OR "celebrity gossip" OR "showbiz" OR "Ghana music" OR "Afrobeats" OR "Nollywood" OR "Ghallywood")',
     '("KNUST" OR "Legon" OR "University of Ghana" OR "UCC" OR "campus news" OR "students" OR "NUGS" OR "SRC" OR "UEW" OR "UPSA" OR "UMaT" OR "TTU" OR "UDS" OR "campus gossip" OR "university matriculation" OR "university graduation" OR "university admission")',
     '("Ghana university" OR "Ghana campus" OR "Ghana tertiary" OR "university students Ghana" OR "hostel Ghana" OR "academic calendar Ghana")',
-    '("Ghana tech" OR "fintech" OR "technology Ghana" OR "startups" OR "cybersecurity" OR "AI Ghana" OR "smartphone")',
+    '("Ghana tech" OR "fintech" OR "technology Ghana" OR "startups" OR "cybersecurity" OR "AI Ghana" OR "smartphone" OR "cryptocurrency" OR "digital innovation" OR "app development" OR "telecom Ghana")',
+    '("Ghana economy" OR "Bank of Ghana" OR "Cedi" OR "inflation" OR "businesses in Ghana" OR "Ghana politics" OR "Parliament" OR "NDC" OR "NPP")',
 ]
 
 CATEGORY_KEYWORDS = {
@@ -449,14 +452,14 @@ def rehost_image(image_url):
 # ─── 🤖 AI REWRITE LOGIC ─────────────────────────────────────────────────────
 def rewrite_article_with_ai(raw_text):
     prompt = f"""
-    You are a professional journalist for The Gist House, writing in the authoritative, objective style of top Ghanaian and international news outlets (like JoyNews, Citi News, or BBC).
-    Rewrite the source material into a FULL, ORIGINAL, high-quality news article.
+    You are an award-winning professional journalist for The Gist House. Your sole job is to take raw source material and write a completely ORIGINAL, authoritative, and deeply engaging news article that perfectly aligns with Google's E-E-A-T (Experience, Expertise, Authoritativeness, and Trustworthiness) standards.
 
-    ⚠️ GOOGLE ADSENSE "HIGH VALUE INVENTORY" COMPLIANCE:
-    - The content must provide significant unique value. Do NOT simply spin the source material.
-    - Add educational value, context, historical background, or broader implications that do not exist in the source material.
-    - Write objectively and factually. Never ask rhetorical questions or address the reader directly.
-    - Eliminate all AI tells, fluff, and robotic transition words (e.g., avoid "in conclusion", "it is important to note", "moreover", "furthermore", "lastly", "consequently", "testament to").
+    ⚠️ CRITICAL ORIGINALITY & QUALITY RULES:
+    - ZERO PLAGIARISM: Do not copy sentences or phrases from the source. You must write an entirely new article from scratch based on the facts provided.
+    - HIGH VALUE INVENTORY: The content must provide significant unique value. Do NOT simply spin or summarize the source material.
+    - ADD DEPTH: You must add educational value, historical context, broader implications, or expert analysis that does not exist in the source material to make it a premium journalism piece.
+    - OBJECTIVITY: Write objectively and factually. Never ask rhetorical questions or address the reader directly.
+    - NO AI TELLS: Eliminate all fluff and robotic transition words (e.g., avoid "in conclusion", "it is important to note", "moreover", "furthermore", "lastly", "consequently", "testament to").
     - Ensure zero formatting artifacts or meta-explanations.
 
     REQUIRED HTML STRUCTURE FOR 'content':
@@ -599,6 +602,20 @@ def run_bot():
         return 0
 
     all_entries.sort(key=get_entry_timestamp, reverse=True)
+
+    # 🎯 INTELLIGENT SORTING: Prioritize missing categories for today
+    if missing_categories:
+        print("🧠 Re-sorting articles to prioritize missing categories...")
+        def get_missing_cat_score(entry):
+            score = 0
+            title_lower = entry.title.lower()
+            for cat in missing_categories:
+                for kw in CATEGORY_KEYWORDS.get(cat, []):
+                    if kw in title_lower:
+                        score += 10
+            return score
+        
+        all_entries.sort(key=lambda e: get_missing_cat_score(e), reverse=True)
 
     posted_count = 0
     failed_attempts = 0
@@ -797,6 +814,7 @@ def run_bot():
             print(f"🎉 SUCCESS! Published: '{data.get('title')}'")
             posted_count += 1
             save_posted_url(actual_url)
+            ping_google_indexing_api(actual_url)
 
             # Update the daily tracker
             tracker["post_count"] = tracker.get("post_count", 0) + 1
@@ -811,6 +829,34 @@ def run_bot():
             if failed_attempts >= 3:
                 print("🛑 Too many server rejections. Shutting down.")
                 break
+
+
+def ping_google_indexing_api(url):
+    try:
+        if not os.path.exists("service_account.json"):
+            print("⚠️ service_account.json not found. Skipping Google Indexing API.")
+            return
+
+        SCOPES = ["https://www.googleapis.com/auth/indexing"]
+        ENDPOINT = "https://indexing.googleapis.com/v3/urlNotifications:publish"
+
+        creds = service_account.Credentials.from_service_account_file("service_account.json", scopes=SCOPES)
+        session = AuthorizedSession(creds)
+
+        response = session.post(
+            ENDPOINT,
+            json={
+                "url": url,
+                "type": "URL_UPDATED"
+            }
+        )
+
+        if response.status_code == 200:
+            print(f"🚀 Google Indexing API pinged successfully for: {url}")
+        else:
+            print(f"⚠️ Google Indexing API failed ({response.status_code}): {response.text}")
+    except Exception as e:
+        print(f"⚠️ Error pinging Google Indexing API: {e}")
 
 
 if __name__ == "__main__":
