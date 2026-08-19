@@ -498,7 +498,7 @@ def rewrite_article_with_ai(raw_text):
             print(f"🧠 Attempting AI rewrite with Groq client #{idx + 1}...")
             chat_completion = client_instance.chat.completions.create(
                 messages=[{"role": "user", "content": prompt}],
-                model="llama3-8b-8192",
+                model="llama-3.3-70b-versatile",
                 response_format={"type": "json_object"},
                 temperature=0.7,
                 max_tokens=2000,
