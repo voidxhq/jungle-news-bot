@@ -501,7 +501,7 @@ def rewrite_article_with_ai(raw_text):
                 model="openai/gpt-oss-120b",
                 response_format={"type": "json_object"},
                 temperature=0.7,
-                max_tokens=2000,
+                max_tokens=4000,
             )
             clean_text = chat_completion.choices[0].message.content.strip()
             return json.loads(clean_text)
