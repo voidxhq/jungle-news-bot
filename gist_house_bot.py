@@ -814,7 +814,16 @@ def run_bot():
             print(f"🎉 SUCCESS! Published: '{data.get('title')}'")
             posted_count += 1
             save_posted_url(actual_url)
-            ping_google_indexing_api(actual_url)
+            
+            try:
+                # The backend API returns the new article URL (e.g., {"url": "https://www.thegisthouse.com/..."})
+                new_article_url = res.json().get("url")
+                if new_article_url:
+                    ping_google_indexing_api(new_article_url)
+                else:
+                    print("⚠️ Could not extract new article URL for indexing.")
+            except Exception as e:
+                print(f"⚠️ Failed to parse response for indexing: {e}")
 
             # Update the daily tracker
             tracker["post_count"] = tracker.get("post_count", 0) + 1
