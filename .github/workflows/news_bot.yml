@@ -23,6 +23,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests feedparser newspaper3k groq lxml_html_clean cloudinary google-auth
 
+      - name: Create Service Account JSON
+        run: echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}' > service_account.json
+
       - name: Run Gist House Bot
         env:
           JUNGLE_BOT_KEY: ${{ secrets.JUNGLE_BOT_KEY }}
