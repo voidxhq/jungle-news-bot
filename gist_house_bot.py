@@ -21,7 +21,7 @@ socket.setdefaulttimeout(30)
 # ==========================================
 # ⚙️ CLOUD CONFIGURATION & GLOBALS
 # ==========================================
-RENDER_API_URL = "https://www.thegisthouse.com/api/bot/post-article"
+RENDER_API_URL = "https://thegisthouse.com/api/bot/post-article"
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 PEXELS_API_KEY = os.environ.get("PEXELS_API_KEY")
 
@@ -43,7 +43,7 @@ AUTHOR_KEYS = {
 
 # 🎲 SUPER ADMIN RANDOM CHANCE (0.0 - 1.0)
 SUPER_ADMIN_CHANCE = 0.25
-DAILY_POST_LIMIT = 48  # Set the daily article limit (up to 48 posts per day for real-time coverage)
+DAILY_POST_LIMIT = 8  # Curated high-quality daily article limit to preserve domain quality and crawl budget
 
 TRACKER_FILE = "daily_tracker.json"
 POSTED_URLS_FILE = "posted_urls.txt"
