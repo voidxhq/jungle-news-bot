@@ -43,7 +43,7 @@ AUTHOR_KEYS = {
 
 # 🎲 SUPER ADMIN RANDOM CHANCE (0.0 - 1.0)
 SUPER_ADMIN_CHANCE = 0.25
-DAILY_POST_LIMIT = 8  # Curated high-quality daily article limit to preserve domain quality and crawl budget
+DAILY_POST_LIMIT = 12  # Allows up to 2 curated high-impact articles per category daily across all 6 categories
 
 TRACKER_FILE = "daily_tracker.json"
 POSTED_URLS_FILE = "posted_urls.txt"
@@ -460,6 +460,7 @@ def rewrite_article_with_ai(raw_text):
     - ADD DEPTH: You must add educational value, historical context, broader implications, or expert analysis that does not exist in the source material to make it a premium journalism piece.
     - OBJECTIVITY: Write objectively and factually. Never ask rhetorical questions or address the reader directly.
     - NO AI TELLS: Eliminate all fluff and robotic transition words (e.g., avoid "in conclusion", "it is important to note", "moreover", "furthermore", "lastly", "consequently", "testament to").
+    - LENGTH & DEPTH: Write a comprehensive, in-depth journalistic article (between 500 and 800 words). Never generate brief summaries or shallow snippets.
     - Ensure zero formatting artifacts or meta-explanations.
 
     REQUIRED HTML STRUCTURE FOR 'content':
@@ -720,8 +721,8 @@ def run_bot():
         ai_excerpt = str(data.get("excerpt") or "").strip()
         ai_title = str(data.get("title") or "").strip()
 
-        if len(ai_content) < 100 or len(ai_excerpt) < 10 or not ai_title:
-            print("❌ AI returned incomplete data (missing content, excerpt, or title). Skipping.")
+        if len(ai_content) < 700 or len(ai_excerpt) < 20 or not ai_title:
+            print("❌ AI returned thin/incomplete data (< 700 chars). Skipping to preserve high Google E-E-A-T quality.")
             continue
 
         # 🚦 ROBUST IMAGE HANDLING
