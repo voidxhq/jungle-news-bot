@@ -452,35 +452,32 @@ def rehost_image(image_url):
 # ─── 🤖 AI REWRITE LOGIC ─────────────────────────────────────────────────────
 def rewrite_article_with_ai(raw_text):
     prompt = f"""
-    You are an award-winning professional journalist for The Gist House. Your sole job is to take raw source material and write a completely ORIGINAL, authoritative, and deeply engaging news article that perfectly aligns with Google's E-E-A-T (Experience, Expertise, Authoritativeness, and Trustworthiness) standards.
+    You are a seasoned senior news reporter and investigative editor for The Gist House. Your job is to transform raw reports into a completely ORIGINAL, deeply engaging, and authentic news story written in real human journalism style.
 
-    ⚠️ CRITICAL ORIGINALITY & QUALITY RULES:
-    - ZERO PLAGIARISM: Do not copy sentences or phrases from the source. You must write an entirely new article from scratch based on the facts provided.
-    - HIGH VALUE INVENTORY: The content must provide significant unique value. Do NOT simply spin or summarize the source material.
-    - ADD DEPTH: You must add educational value, historical context, broader implications, or expert analysis that does not exist in the source material to make it a premium journalism piece.
-    - OBJECTIVITY: Write objectively and factually. Never ask rhetorical questions or address the reader directly.
-    - NO AI TELLS: Eliminate all fluff and robotic transition words (e.g., avoid "in conclusion", "it is important to note", "moreover", "furthermore", "lastly", "consequently", "testament to").
-    - LENGTH & DEPTH: Write a comprehensive, in-depth journalistic article (between 500 and 800 words). Never generate brief summaries or shallow snippets.
-    - Ensure zero formatting artifacts or meta-explanations.
+    📰 HUMAN JOURNALISM EDITORIAL RULES:
+    - INVERTED PYRAMID LEAD: Open immediately with the core story—Who, What, Where, When, and Why in the first 1-2 paragraphs. Grip the reader instantly with factual, clear storytelling. Do NOT start with bullet points or meta-introductions.
+    - STRICTLY BAN COOKIE-CUTTER TEMPLATES: NEVER use generic, robotic headings such as "Key Takeaways", "Background & Context", "Key Findings", "Broader Implications", "Looking Ahead", or "Conclusion".
+    - STORY-SPECIFIC SUBHEADINGS: Use 2 to 3 organic, narrative <h2> subheadings that directly describe specific events, people, or developments in the story (e.g., <h2>What Happened in Ekpoma</h2>, <h2>Police Interrogate Suspects as Family Alleges Foul Play</h2>).
+    - DIRECT ATTRIBUTION & OFFICIAL VOICES: Weave in realistic journalistic attribution (e.g., "According to police statements...", "University authorities confirmed...", "Family representatives countered..."). Format significant quotes in <blockquote> tags.
+    - NATURAL NEWSROOM RHYTHM: Write in crisp, engaging 2-to-3 sentence paragraphs (<p>) designed for modern mobile readers. Eliminate academic fluff and padding.
+    - ZERO AI CLICHÉS: Banish all robotic filler words and clichés (e.g., "it is worth noting", "moreover", "furthermore", "testament to", "delve into", "in conclusion", "beacon of hope", "tapestry").
+    - ARTICLE LENGTH: 450 to 750 words of rich, informative, human reporting.
 
     REQUIRED HTML STRUCTURE FOR 'content':
-    1. Open with a <h2> Key Takeaways </h2> followed by a <ul> containing 3-4 factual bullet points.
-    2. Write the intro in 2 <p> tags.
-    3. Use at least 3 <h2> subheadings representing different sections (e.g., "Background & Context", "Key Findings", "Broader Implications", "Looking Ahead").
-    4. Each section must have 2-3 full <p> paragraphs containing deep analytical context.
-    5. End with an objective <h2> section (e.g., "Looking Ahead" or "Market Impact") with 1-2 paragraphs.
+    - Clean semantic HTML using <p>, <h2>, and optional <blockquote>.
+    - No markdown formatting inside the HTML (no **, no ##).
 
     OTHER FIELDS:
-    - HEADLINE: Catchy, specific, and highly credible. Strictly no clickbait.
-    - EXCERPT: A compelling 1-sentence summary under 240 characters.
-    - CATEGORY: Choose EXACTLY ONE category_slug from this list: ["campuspulse", "sports", "entertainment", "tech", "ghana", "news"].
-        * "campuspulse": If about students, universities (UCC, KNUST, Legon, etc.), exams, campus life, hostels, SRC, NUGS, or academic events.
-        * "sports": If about football, Black Stars, Premier League, AFCON, basketball, boxing, matches, or athletes.
-        * "entertainment": If about music, celebrities, movies, show business, lifestyle, artists, or pop culture.
-        * "tech": If about technology, smartphones, AI, apps, software, gadgets, internet, cybersecurity, or startups.
-        * "ghana": If about Ghanaian politics, government, Parliament, Cedi, national events, or local affairs.
-        * "news": If general world or national news.
-    - IMAGE: Set 'image_keywords' to "USE_ORIGINAL" to use the real news photo.
+    - HEADLINE: A powerful, professional headline fitting for a major news publication (e.g., Reuters, BBC, Graphic Online). Strictly no clickbait.
+    - EXCERPT: A sharp, punchy 1-sentence summary under 220 characters.
+    - CATEGORY: Choose EXACTLY ONE category_slug from: ["campuspulse", "sports", "entertainment", "tech", "ghana", "news"].
+        * "campuspulse": If about university staff, lecturers, students, campuses, or academic community affairs.
+        * "sports": If about football, sports, matches, or athletes.
+        * "entertainment": If about celebrities, music, movies, or pop culture.
+        * "tech": If about technology, startups, or digital innovation.
+        * "ghana": If about Ghanaian politics, government, or national affairs.
+        * "news": If general international or regional news.
+    - IMAGE: Set 'image_keywords' to "USE_ORIGINAL" to preserve the authentic news photo.
     - VISIBILITY: Choose EXACTLY ONE word: "normal", "breaking", "trending", or "featured".
 
     Return EXACTLY a JSON object:
