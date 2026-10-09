@@ -462,6 +462,8 @@ def rewrite_article_with_ai(raw_text):
     - MINIMAL & ORGANIC SUBHEADINGS: Use subheadings (<h2>) sparingly (1 to 2 at most, or none if the piece is brief). ONLY use a subheading when introducing a distinct, substantive development (e.g., an official university response or an investigative statement). NEVER force generic or templated subheadings.
     - PRESERVE OFFICIAL QUOTES: Keep direct quotes intact as spoken by named officials, spokespersons, or eyewitnesses. Wrap verified quotes in <blockquote> tags.
     - NO GENERIC AI CLOSINGS: End the report cleanly and naturally with the current factual status of the story (e.g., police confirmation that inquiries are ongoing). NEVER invent future predictions or add generic wrap-ups ('In conclusion', 'As time goes on', 'Only time will tell').
+    - SOURCE TRANSPARENCY (GOOGLE E-E-A-T): At the very end of 'content', always include an editorial attribution note citing the primary publisher or agency from the source text (e.g., JoyNews, Citi Newsroom, Graphic Online, Premium Times, Pulse):
+      <div class="p-3 bg-light border-start border-3 border-secondary rounded-end small text-muted mt-4"><p class="mb-0"><strong>Sources & Editorial Note:</strong> Based on official statements and verified reporting by [Primary Source Name]. The Gist House will provide updates as further details emerge.</p></div>
     - CLEAN SEMANTIC HTML: Write the 'content' in clean semantic HTML with <p>, occasional <h2>, and <blockquote>. No markdown symbols (** or ##).
 
     OTHER FIELDS:
