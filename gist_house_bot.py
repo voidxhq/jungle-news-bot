@@ -434,51 +434,7 @@ def find_clean_image(keyword):
     return None
 
 
-# ─── 🛡️ IMAGE RE-HOSTING & SOURCE ATTRIBUTION LOGIC ─────────────────────────
-def get_clean_source_name(url):
-    """Maps a scraped URL domain to a clean, authoritative publisher brand name."""
-    try:
-        import urllib.parse
-        domain = urllib.parse.urlparse(url).netloc.lower().replace("www.", "")
-        domain_map = {
-            "myjoyonline.com": "MyJoyOnline",
-            "pulse.com.gh": "Pulse Ghana",
-            "adomonline.com": "Adom Online",
-            "modernghana.com": "Modern Ghana",
-            "ghanaweb.com": "GhanaWeb",
-            "peacefmonline.com": "Peace FM Online",
-            "citinewsroom.com": "Citi Newsroom",
-            "aptnewsghana.com": "Apt News Ghana",
-            "ghanaiantimes.com.gh": "Ghanaian Times",
-            "theheraldghana.com": "The Herald Ghana",
-            "ghanasummary.com": "Ghana Summary",
-            "impelnews.net": "Impel News",
-            "afiaghana.com": "Afia Ghana",
-            "ghheadlines.com": "GHHeadlines",
-            "ghcampus.com": "GH Campus",
-            "accramail.com": "Accra Mail",
-            "ghanamusic.com": "Ghana Music",
-            "3music.tv": "3Music TV",
-            "eonlinegh.com": "EOnline Ghana",
-            "soccanews.com": "Socca News",
-            "mfidie.com": "Mfidie",
-            "fifty7tech.com": "Fifty7 Tech",
-            "premiumtimesng.com": "Premium Times",
-            "pointblanknews.com": "Pointblank News",
-            "punchng.com": "Punch Nigeria",
-            "guardian.ng": "The Guardian Nigeria",
-            "vanguardngr.com": "Vanguard Nigeria",
-            "bbc.com": "BBC News",
-        }
-        for d, name in domain_map.items():
-            if d in domain:
-                return name
-        parts = domain.split(".")
-        return parts[0].capitalize() if parts else "Original News Wire"
-    except Exception:
-        return "Original News Wire"
-
-
+# ─── 🛡️ IMAGE RE-HOSTING LOGIC ────────────────────────────────────────────────
 def rehost_image(image_url):
     """Re-hosts a scraped image directly onto your Cloudinary account."""
     if not image_url:
@@ -506,8 +462,6 @@ def rewrite_article_with_ai(raw_text):
     - MINIMAL & ORGANIC SUBHEADINGS: Use subheadings (<h2>) sparingly (1 to 2 at most, or none if the piece is brief). ONLY use a subheading when introducing a distinct, substantive development (e.g., an official university response or an investigative statement). NEVER force generic or templated subheadings.
     - PRESERVE OFFICIAL QUOTES: Keep direct quotes intact as spoken by named officials, spokespersons, or eyewitnesses. Wrap verified quotes in <blockquote> tags.
     - NO GENERIC AI CLOSINGS: End the report cleanly and naturally with the current factual status of the story (e.g., police confirmation that inquiries are ongoing). NEVER invent future predictions or add generic wrap-ups ('In conclusion', 'As time goes on', 'Only time will tell').
-    - SOURCE TRANSPARENCY (GOOGLE E-E-A-T): At the very end of 'content', always include an editorial attribution note citing the primary publisher or agency from the source text (e.g., JoyNews, Citi Newsroom, Graphic Online, Premium Times, Pulse):
-      <div class="p-3 bg-light border-start border-3 border-secondary rounded-end small text-muted mt-4"><p class="mb-0"><strong>Sources & Editorial Note:</strong> Based on official statements and verified reporting by [Primary Source Name]. The Gist House will provide updates as further details emerge.</p></div>
     - CLEAN SEMANTIC HTML: Write the 'content' in clean semantic HTML with <p>, occasional <h2>, and <blockquote>. No markdown symbols (** or ##).
 
     OTHER FIELDS:
@@ -788,14 +742,7 @@ def run_bot():
             if final_img:
                 image_source_text = "Pexels"
 
-        # 🚦 MANDATORY E-E-A-T SOURCE TRANSPARENCY BOX (Automatic Injection)
-        source_name = get_clean_source_name(actual_url)
-        source_box = f'<div class="p-3 bg-light border-start border-3 border-secondary rounded-end small text-muted mt-4"><p class="mb-0"><strong>Sources & Editorial Note:</strong> Based on verified reporting and official statements originally reported by <a href="{actual_url}" target="_blank" rel="noopener noreferrer" class="text-decoration-underline text-secondary">{source_name}</a>. The Gist House curates and verifies news for clarity and mobile reading. Updates will be provided as details develop.</p></div>'
-
-        if "Sources & Editorial Note" not in ai_content:
-            final_content = f"{ai_content}\n\n{source_box}"
-        else:
-            final_content = ai_content
+        final_content = ai_content
 
         # 🚦 FUZZY VISIBILITY HANDLING
         vis_tag = str(data.get("visibility_tag") or "normal").lower()
