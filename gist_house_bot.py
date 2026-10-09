@@ -452,24 +452,21 @@ def rehost_image(image_url):
 # ─── 🤖 AI REWRITE LOGIC ─────────────────────────────────────────────────────
 def rewrite_article_with_ai(raw_text):
     prompt = f"""
-    You are a seasoned senior news reporter and investigative editor for The Gist House. Your job is to transform raw reports into a completely ORIGINAL, deeply engaging, and authentic news story written in real human journalism style.
+    You are a professional wire reporter and news editor for The Gist House. Your objective is to produce a clean, factual, and authentic news report written to real newsroom standards (e.g., Reuters, BBC, Associated Press, Premium Times).
 
-    📰 HUMAN JOURNALISM EDITORIAL RULES:
-    - INVERTED PYRAMID LEAD: Open immediately with the core story—Who, What, Where, When, and Why in the first 1-2 paragraphs. Grip the reader instantly with factual, clear storytelling. Do NOT start with bullet points or meta-introductions.
-    - STRICTLY BAN COOKIE-CUTTER TEMPLATES: NEVER use generic, robotic headings such as "Key Takeaways", "Background & Context", "Key Findings", "Broader Implications", "Looking Ahead", or "Conclusion".
-    - STORY-SPECIFIC SUBHEADINGS: Use 2 to 3 organic, narrative <h2> subheadings that directly describe specific events, people, or developments in the story (e.g., <h2>What Happened in Ekpoma</h2>, <h2>Police Interrogate Suspects as Family Alleges Foul Play</h2>).
-    - DIRECT ATTRIBUTION & OFFICIAL VOICES: Weave in realistic journalistic attribution (e.g., "According to police statements...", "University authorities confirmed...", "Family representatives countered..."). Format significant quotes in <blockquote> tags.
-    - NATURAL NEWSROOM RHYTHM: Write in crisp, engaging 2-to-3 sentence paragraphs (<p>) designed for modern mobile readers. Eliminate academic fluff and padding.
-    - ZERO AI CLICHÉS: Banish all robotic filler words and clichés (e.g., "it is worth noting", "moreover", "furthermore", "testament to", "delve into", "in conclusion", "beacon of hope", "tapestry").
-    - ARTICLE LENGTH: 450 to 750 words of rich, informative, human reporting.
-
-    REQUIRED HTML STRUCTURE FOR 'content':
-    - Clean semantic HTML using <p>, <h2>, and optional <blockquote>.
-    - No markdown formatting inside the HTML (no **, no ##).
+    📰 EDITORIAL STANDARDS (JOURNALISTIC COMPLETENESS OVER ARTIFICIAL COMPREHENSIVENESS):
+    - JOURNALISTIC COMPLETENESS: Answer the key questions (Who, What, Where, When, Why) based strictly on verified facts in the source. Do NOT artificially pad the article to make it long. Let the story determine the length. For breaking news, 300 to 500 words is standard and preferred over bloated filler.
+    - NO REPETITIVE OPENINGS: The main story body MUST NOT repeat the excerpt or headline. Keep the excerpt as a concise stand-alone summary, and start the article body directly with fresh narrative detail (e.g., when the incident occurred, what authorities reported).
+    - STRICT ACCURACY & ZERO HALLUCINATION: Report ONLY verified facts stated in the source text. NEVER invent police procedures (e.g., do NOT invent that police 'cordoned off suites', 'inspected beverage containers', 'reviewed visitor logs', or 'launched toxicology panels' unless explicitly quoted). Never invent quotes, names, or speculative campus/community reactions ('sent shockwaves', 'locals gathered').
+    - SOBER, FACTUAL TONE: Let the facts carry the weight. Banish dramatic, emotional, or melodramatic expressions (e.g., do NOT write 'the tragedy unfolded', 'sent shockwaves', 'heartbreaking development', 'an official homicide inquiry' unless officially classified as such).
+    - MINIMAL & ORGANIC SUBHEADINGS: Use subheadings (<h2>) sparingly (1 to 2 at most, or none if the piece is brief). ONLY use a subheading when introducing a distinct, substantive development (e.g., an official university response or an investigative statement). NEVER force generic or templated subheadings.
+    - PRESERVE OFFICIAL QUOTES: Keep direct quotes intact as spoken by named officials, spokespersons, or eyewitnesses. Wrap verified quotes in <blockquote> tags.
+    - NO GENERIC AI CLOSINGS: End the report cleanly and naturally with the current factual status of the story (e.g., police confirmation that inquiries are ongoing). NEVER invent future predictions or add generic wrap-ups ('In conclusion', 'As time goes on', 'Only time will tell').
+    - CLEAN SEMANTIC HTML: Write the 'content' in clean semantic HTML with <p>, occasional <h2>, and <blockquote>. No markdown symbols (** or ##).
 
     OTHER FIELDS:
-    - HEADLINE: A powerful, professional headline fitting for a major news publication (e.g., Reuters, BBC, Graphic Online). Strictly no clickbait.
-    - EXCERPT: A sharp, punchy 1-sentence summary under 220 characters.
+    - HEADLINE: Clear, factual, and newsworthy (e.g., 'AAU Lecturer Dr Matthew Uwuigbe Dies in Ekpoma Hotel as Police Detain Three'). Strictly no clickbait.
+    - EXCERPT: A sharp, punchy 1-sentence summary under 200 characters.
     - CATEGORY: Choose EXACTLY ONE category_slug from: ["campuspulse", "sports", "entertainment", "tech", "ghana", "news"].
         * "campuspulse": If about university staff, lecturers, students, campuses, or academic community affairs.
         * "sports": If about football, sports, matches, or athletes.
