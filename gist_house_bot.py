@@ -48,55 +48,70 @@ DAILY_POST_LIMIT = 12  # Allows up to 2 curated high-impact articles per categor
 TRACKER_FILE = "daily_tracker.json"
 POSTED_URLS_FILE = "posted_urls.txt"
 REQUIRED_CATEGORIES = [
-    "news",
-    "sports",
-    "entertainment",
     "campuspulse",
     "tech",
+    "entertainment",
+    "sports",
     "ghana",
+    "news",
 ]
 
-GHANA_RSS_FEEDS = [
-    # ---- 📰 General News ----
-    "https://myjoyonline.com/feed",
-    "https://pulse.com.gh/rss",
-    "https://pulse.com.gh/news/rss",
-    "https://adomonline.com/feed",
-    "https://www.modernghana.com/rss/",
-    "https://www.ghanaweb.com/GhanaHomePage/rss/",
-    "https://peacefmonline.com/feed",
-    "https://citinewsroom.com/feed",
-    "https://aptnewsghana.com/index.php/feed",
-    "https://ghanaiantimes.com.gh/feed",
-    "https://theheraldghana.com/feed",
-    "https://ghanasummary.com/feed",
-    "https://impelnews.net/feed",
-    "https://afiaghana.com/feed",
-    "https://ghheadlines.com/rss",
-    # ---- 🎓 Campus / Education ----
-    "https://ghcampus.com/feed",
-    "https://accramail.com/feed",
-    "https://campusnewsofficial.blogspot.com/feeds/posts/default",
-    "https://ghanacampus.blogspot.com/feeds/posts/default",
-    # ---- 🎬 Entertainment / Showbiz ----
-    "https://pulse.com.gh/entertainment/rss",
-    "https://pulse.com.gh/lifestyle/rss",
-    "https://myjoyonline.com/category/entertainment/feed/",
-    "https://ghanamusic.com/feed",
-    "https://3music.tv/feed",
-    "https://eonlinegh.com/feed",
-    "https://adomonline.com/category/entertainment/feed",
-    # ---- ⚽ Sports ----
-    "https://pulse.com.gh/sports/rss",
-    "https://myjoyonline.com/category/sports/feed/",
-    "https://soccanews.com/feed",
-    "https://citinewsroom.com/category/sports/feed",
-    # ---- 📱 Tech / Trends ----
-    "https://pulse.com.gh/business/rss",
-    "https://myjoyonline.com/category/technology/feed/",
-    "https://mfidie.com/feed",
-    "https://fifty7tech.com/feed",
-]
+# 📡 VERIFIED CATEGORIZED RSS FEEDS (Live & Tested)
+CATEGORY_FEEDS = {
+    "campuspulse": [
+        "https://www.myjoyonline.com/tag/knust/feed/",
+        "https://www.myjoyonline.com/tag/university-of-ghana/feed/",
+        "https://www.myjoyonline.com/tag/ucc/feed/",
+        "https://www.myjoyonline.com/tag/upsa/feed/",
+        "https://www.myjoyonline.com/tag/uew/feed/",
+        "https://www.myjoyonline.com/tag/students/feed/",
+        "https://www.myjoyonline.com/tag/src/feed/",
+        "https://ghcampus.com/feed",
+    ],
+    "tech": [
+        "https://techfocus24.com/feed",
+        "https://techlabari.com/feed",
+        "https://mfidie.com/feed",
+        "https://techcabal.com/feed",
+        "https://techpoint.africa/feed",
+        "https://www.benjamindada.com/rss/",
+    ],
+    "sports": [
+        "https://pulse.com.gh/sports/rss",
+        "https://myjoyonline.com/category/sports/feed/",
+        "https://soccanews.com/feed",
+        "https://citinewsroom.com/category/sports/feed",
+    ],
+    "entertainment": [
+        "https://pulse.com.gh/entertainment/rss",
+        "https://myjoyonline.com/category/entertainment/feed/",
+        "https://ghanamusic.com/feed",
+        "https://3music.tv/feed",
+        "https://eonlinegh.com/feed",
+        "https://adomonline.com/category/entertainment/feed",
+    ],
+    "ghana": [
+        "https://pulse.com.gh/rss",
+        "https://pulse.com.gh/news/rss",
+        "https://adomonline.com/feed",
+        "https://www.modernghana.com/rss/",
+        "https://citinewsroom.com/feed",
+        "https://theheraldghana.com/feed",
+        "https://ghanasummary.com/feed",
+    ],
+    "news": [
+        "https://myjoyonline.com/feed",
+        "https://www.ghanaweb.com/GhanaHomePage/rss/",
+        "https://peacefmonline.com/feed",
+        "https://ghanaiantimes.com.gh/feed",
+        "https://aptnewsghana.com/index.php/feed",
+        "https://impelnews.net/feed",
+        "https://afiaghana.com/feed",
+        "https://ghheadlines.com/rss",
+    ],
+}
+
+GHANA_RSS_FEEDS = [url for feed_list in CATEGORY_FEEDS.values() for url in feed_list]
 
 # ---- 🔍 Google News Search Keywords (Option 1) ----
 GOOGLE_NEWS_KEYWORDS = [
@@ -450,7 +465,18 @@ def rehost_image(image_url):
 
 
 # ─── 🤖 AI REWRITE LOGIC ─────────────────────────────────────────────────────
-def rewrite_article_with_ai(raw_text):
+def rewrite_article_with_ai(raw_text, target_cat=None):
+    if target_cat and target_cat in ["campuspulse", "tech", "sports", "entertainment", "ghana", "news"]:
+        category_instruction = f"- CATEGORY: This article belongs to '{target_cat}'. Set 'category_slug' to '{target_cat}'."
+    else:
+        category_instruction = """- CATEGORY: Choose EXACTLY ONE category_slug from: ["campuspulse", "sports", "entertainment", "tech", "ghana", "news"].
+        * "campuspulse": If about university staff, lecturers, students, campuses, or academic community affairs.
+        * "sports": If about football, sports, matches, or athletes.
+        * "entertainment": If about celebrities, music, movies, or pop culture.
+        * "tech": If about technology, startups, or digital innovation.
+        * "ghana": If about Ghanaian politics, government, or national affairs.
+        * "news": If general international or regional news."""
+
     prompt = f"""
     You are a professional wire reporter and news editor for The Gist House. Your objective is to produce a clean, factual, and authentic news report written to real newsroom standards (e.g., Reuters, BBC, Associated Press, Premium Times).
 
@@ -467,13 +493,7 @@ def rewrite_article_with_ai(raw_text):
     OTHER FIELDS:
     - HEADLINE: Clear, factual, and newsworthy (e.g., 'AAU Lecturer Dr Matthew Uwuigbe Dies in Ekpoma Hotel as Police Detain Three'). Strictly no clickbait.
     - EXCERPT: A sharp, punchy 1-sentence summary under 200 characters.
-    - CATEGORY: Choose EXACTLY ONE category_slug from: ["campuspulse", "sports", "entertainment", "tech", "ghana", "news"].
-        * "campuspulse": If about university staff, lecturers, students, campuses, or academic community affairs.
-        * "sports": If about football, sports, matches, or athletes.
-        * "entertainment": If about celebrities, music, movies, or pop culture.
-        * "tech": If about technology, startups, or digital innovation.
-        * "ghana": If about Ghanaian politics, government, or national affairs.
-        * "news": If general international or regional news.
+    {category_instruction}
     - IMAGE: Set 'image_keywords' to "USE_ORIGINAL" to preserve the authentic news photo.
     - VISIBILITY: Choose EXACTLY ONE word: "normal", "breaking", "trending", or "featured".
 
@@ -554,33 +574,31 @@ def run_bot():
     time.sleep(sleep_time)
 
     missing_categories = [
-        c for c in REQUIRED_CATEGORIES if c not in tracker["posted_categories"]
+        c for c in REQUIRED_CATEGORIES if c not in tracker.get("posted_categories", [])
     ]
-    print(f"🎯 Target Categories for today: {missing_categories}")
+    if not missing_categories:
+        missing_categories = list(REQUIRED_CATEGORIES)
+
+    # Priority rotation: campuspulse and tech take front priority if missing!
+    priority_order = ["campuspulse", "tech", "entertainment", "sports", "ghana", "news"]
+    sorted_missing = [c for c in priority_order if c in missing_categories]
+    target_category = sorted_missing[0] if sorted_missing else "campuspulse"
+    print(f"🎯 Target Category for this run: '{target_category}' (All missing today: {missing_categories})")
 
     all_entries = []
-    print("📡 Scanning RSS Feeds...")
+    print("📡 Scanning Categorized RSS Feeds...")
 
-    # Combine regular feeds with Google News search query feeds
-    all_targets = list(GHANA_RSS_FEEDS)
-    
-    # 1. Add the main Google News top stories feed for Ghana (covers all major news, politics, business, tech, general sports/entertainment)
-    all_targets.append("https://news.google.com/rss?hl=en-GH&gl=GH&ceid=GH:en")
-    
-    # 2. Add custom topic search feeds
-    for kw in GOOGLE_NEWS_KEYWORDS:
-        encoded_query = requests.utils.quote(kw)
-        google_news_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=en-GH&gl=GH&ceid=GH:en"
-        all_targets.append(google_news_url)
-
-    for target in all_targets:
-        try:
-            feed = feedparser.parse(target)
-            for e in feed.entries[:15]:
-                if e.link not in posted_urls:
-                    all_entries.append(e)
-        except:
-            pass
+    # Scan all verified categorized feeds and tag each entry with its origin category
+    for cat, feed_list in CATEGORY_FEEDS.items():
+        for target in feed_list:
+            try:
+                feed = feedparser.parse(target)
+                for e in feed.entries[:15]:
+                    if e.link not in posted_urls:
+                        e.feed_category = cat
+                        all_entries.append(e)
+            except:
+                pass
 
     if not all_entries:
         print("💤 No fresh news found. Going back to sleep.")
@@ -596,21 +614,35 @@ def run_bot():
                     pass
         return 0
 
-    all_entries.sort(key=get_entry_timestamp, reverse=True)
+    # 🎯 INTELLIGENT SORTING: Prioritize target category and missing categories
+    def get_hunt_score(entry):
+        score = 0
+        feed_cat = getattr(entry, "feed_category", None)
+        title_lower = entry.title.lower()
+        
+        # Direct feed category match receives the highest boost
+        if feed_cat == target_category:
+            score += 200
+        elif feed_cat in missing_categories:
+            score += 50
+        
+        # Keyword match for target category
+        for kw in CATEGORY_KEYWORDS.get(target_category, []):
+            if kw in title_lower:
+                score += 80
+                break
 
-    # 🎯 INTELLIGENT SORTING: Prioritize missing categories for today
-    if missing_categories:
-        print("🧠 Re-sorting articles to prioritize missing categories...")
-        def get_missing_cat_score(entry):
-            score = 0
-            title_lower = entry.title.lower()
-            for cat in missing_categories:
-                for kw in CATEGORY_KEYWORDS.get(cat, []):
+        # Other missing category keyword match
+        for m_cat in missing_categories:
+            if m_cat != target_category:
+                for kw in CATEGORY_KEYWORDS.get(m_cat, []):
                     if kw in title_lower:
                         score += 10
-            return score
-        
-        all_entries.sort(key=lambda e: get_missing_cat_score(e), reverse=True)
+                        break
+        return score
+
+    # Sort primarily by hunt score, then by recency
+    all_entries.sort(key=lambda e: (get_hunt_score(e), get_entry_timestamp(e)), reverse=True)
 
     posted_count = 0
     failed_attempts = 0
@@ -688,27 +720,36 @@ def run_bot():
                     best_cat = cat
             return best_cat, scores
 
+        feed_cat = getattr(entry, "feed_category", None)
         forced_cat, cat_scores = get_best_category(entry.title, safe_text)
-        print(f"🧠 Python Keyword Scores: {cat_scores}")
-        print(f"🧠 Sending to Groq AI for rewriting & category selection...")
-        data = rewrite_article_with_ai(safe_text)
+        if feed_cat and feed_cat in REQUIRED_CATEGORIES:
+            forced_cat = feed_cat
+            print(f"🏷️ Designated Feed Category: '{forced_cat}'")
+        else:
+            print(f"🧠 Python Keyword Scores: {cat_scores}")
+
+        print(f"🧠 Sending to Groq AI for rewriting & category assignment...")
+        data = rewrite_article_with_ai(safe_text, target_cat=forced_cat)
 
         if not data:
             print("❌ AI Failed to return valid JSON.")
             continue
 
-        # 🚦 AI CATEGORY DETERMINATION WITH KEYWORD FALLBACK
+        # 🚦 AI CATEGORY DETERMINATION WITH STRICT FEED/KEYWORD LOCK
         ai_cat = str(data.get("category_slug") or "").strip().lower()
-        if ai_cat in ["campus", "campuspulse"]:
+        if forced_cat in ["campuspulse", "tech"]:
+            # Never downgrade verified campus or tech articles to generic news!
+            selected_cat = forced_cat
+        elif ai_cat in ["campus", "campuspulse"]:
             selected_cat = "campuspulse"
         elif ai_cat in ["sports", "entertainment", "tech", "ghana", "news"]:
             selected_cat = ai_cat
-        elif forced_cat and forced_cat != "news":
+        elif forced_cat and forced_cat in REQUIRED_CATEGORIES:
             selected_cat = forced_cat
         else:
             selected_cat = "news"
 
-        print(f"🎯 Final Selected Category: '{selected_cat}' (AI: '{ai_cat}', Keyword score: '{forced_cat}')")
+        print(f"🎯 Final Selected Category: '{selected_cat}' (Feed: '{forced_cat}', AI: '{ai_cat}')")
 
         # 🚦 VALIDATE AI OUTPUT TO PREVENT EMPTY POSTS
         ai_content = str(data.get("content") or "").strip()
@@ -822,8 +863,8 @@ def run_bot():
 
             # Update the daily tracker
             tracker["post_count"] = tracker.get("post_count", 0) + 1
-            if forced_cat not in tracker["posted_categories"]:
-                tracker["posted_categories"].append(forced_cat)
+            if selected_cat not in tracker["posted_categories"]:
+                tracker["posted_categories"].append(selected_cat)
             save_daily_tracker(tracker)
         else:
             status_code = res.status_code if res else "No Response"
