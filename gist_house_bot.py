@@ -59,14 +59,34 @@ REQUIRED_CATEGORIES = [
 # 📡 VERIFIED CATEGORIZED RSS FEEDS (Live & Tested)
 CATEGORY_FEEDS = {
     "campuspulse": [
+        # Tertiary & Universities
         "https://www.myjoyonline.com/tag/knust/feed/",
         "https://www.myjoyonline.com/tag/university-of-ghana/feed/",
         "https://www.myjoyonline.com/tag/ucc/feed/",
         "https://www.myjoyonline.com/tag/upsa/feed/",
         "https://www.myjoyonline.com/tag/uew/feed/",
+        "https://www.myjoyonline.com/tag/uds/feed/",
+        "https://www.myjoyonline.com/tag/umat/feed/",
+        "https://www.myjoyonline.com/tag/gimpa/feed/",
         "https://www.myjoyonline.com/tag/students/feed/",
         "https://www.myjoyonline.com/tag/src/feed/",
         "https://ghcampus.com/feed",
+        # Senior High School & Basic Education
+        "https://www.myjoyonline.com/tag/shs/feed/",
+        "https://www.myjoyonline.com/tag/free-shs/feed/",
+        "https://www.myjoyonline.com/tag/ges/feed/",
+        # Examinations & Academic Competitions
+        "https://www.myjoyonline.com/tag/waec/feed/",
+        "https://www.myjoyonline.com/tag/wassce/feed/",
+        "https://www.myjoyonline.com/tag/bece/feed/",
+        "https://www.myjoyonline.com/tag/nsmq/feed/",
+        "https://www.adomonline.com/tag/waec/feed/",
+        # General Education & Teacher Unions
+        "https://www.myjoyonline.com/tag/education/feed/",
+        "https://www.adomonline.com/tag/education/feed/",
+        "https://www.myjoyonline.com/tag/utag/feed/",
+        "https://www.myjoyonline.com/tag/cetag/feed/",
+        "https://www.myjoyonline.com/tag/teachers/feed/",
     ],
     "tech": [
         "https://techfocus24.com/feed",
@@ -119,6 +139,7 @@ GOOGLE_NEWS_KEYWORDS = [
     '("Ghana celebrities" OR "shatta wale" OR "stonebwoy" OR "sarkodie" OR "celebrity gossip" OR "showbiz" OR "Ghana music" OR "Afrobeats" OR "Nollywood" OR "Ghallywood")',
     '("KNUST" OR "Legon" OR "University of Ghana" OR "UCC" OR "campus news" OR "students" OR "NUGS" OR "SRC" OR "UEW" OR "UPSA" OR "UMaT" OR "TTU" OR "UDS" OR "campus gossip" OR "university matriculation" OR "university graduation" OR "university admission")',
     '("Ghana university" OR "Ghana campus" OR "Ghana tertiary" OR "university students Ghana" OR "hostel Ghana" OR "academic calendar Ghana")',
+    '("WAEC Ghana" OR "WASSCE" OR "BECE" OR "Free SHS" OR "Ghana Education Service" OR "GES" OR "senior high school" OR "NSMQ" OR "UTAG" OR "NAGRAT" OR "GNAT" OR "CETAG" OR "Ministry of Education Ghana" OR "basic school Ghana" OR "school placement")',
     '("Ghana tech" OR "fintech" OR "technology Ghana" OR "startups" OR "cybersecurity" OR "AI Ghana" OR "smartphone" OR "cryptocurrency" OR "digital innovation" OR "app development" OR "telecom Ghana")',
     '("Ghana economy" OR "Bank of Ghana" OR "Cedi" OR "inflation" OR "businesses in Ghana" OR "Ghana politics" OR "Parliament" OR "NDC" OR "NPP")',
 ]
@@ -192,7 +213,18 @@ CATEGORY_KEYWORDS = {
         "gimpa",
         "ttu",
         "uds",
+        "htu",
+        "ktu",
+        "atug",
+        "central university",
+        "ashesi",
+        "valley view",
+        "academic",
+        "university",
+        "polytechnic",
+        "tertiary",
         "student",
+        "students",
         "campus",
         "src",
         "nugs",
@@ -274,6 +306,46 @@ CATEGORY_KEYWORDS = {
         "campus drama",
         "student protest",
         "campus demonstration",
+        # Senior High School & Basic Education
+        "waec",
+        "wassce",
+        "bece",
+        "ges",
+        "ghana education service",
+        "ministry of education",
+        "free shs",
+        "shs",
+        "senior high school",
+        "senior high",
+        "jhs",
+        "junior high school",
+        "basic school",
+        "basic education",
+        "primary school",
+        "headmaster",
+        "headmistress",
+        "school feeding",
+        "cssps",
+        "school placement",
+        "placement",
+        "nsmq",
+        "national science and maths quiz",
+        "science and maths quiz",
+        "curriculum",
+        "textbooks",
+        "teacher licensure",
+        "licensure examination",
+        "gnat",
+        "nagrat",
+        "cct-gh",
+        "tewu",
+        "cetag",
+        "gaua",
+        "utag",
+        "stem school",
+        "stem education",
+        "school reopening",
+        "chass",
     ],
     "tech": [
         "ai",
@@ -470,7 +542,7 @@ def rewrite_article_with_ai(raw_text, target_cat=None):
         category_instruction = f"- CATEGORY: This article belongs to '{target_cat}'. Set 'category_slug' to '{target_cat}'."
     else:
         category_instruction = """- CATEGORY: Choose EXACTLY ONE category_slug from: ["campuspulse", "sports", "entertainment", "tech", "ghana", "news"].
-        * "campuspulse": If about university staff, lecturers, students, campuses, or academic community affairs.
+        * "campuspulse": If about universities, tertiary institutions, SHS, basic schools, students, teachers, lecturers, WAEC, BECE, WASSCE, GES, Free SHS, NSMQ, or national education affairs.
         * "sports": If about football, sports, matches, or athletes.
         * "entertainment": If about celebrities, music, movies, or pop culture.
         * "tech": If about technology, startups, or digital innovation.
