@@ -950,14 +950,29 @@ def run_bot():
 
 def ping_google_indexing_api(url):
     try:
-        if not os.path.exists("service_account.json"):
-            print("⚠️ service_account.json not found. Skipping Google Indexing API.")
+        service_account_info = None
+        raw_env = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+        if raw_env:
+            try:
+                service_account_info = json.loads(raw_env)
+            except Exception as json_err:
+                print(f"⚠️ Could not parse GOOGLE_SERVICE_ACCOUNT_JSON env var: {json_err}")
+
+        if not service_account_info and os.path.exists("service_account.json"):
+            try:
+                with open("service_account.json", "r", encoding="utf-8") as f:
+                    service_account_info = json.load(f)
+            except Exception as file_err:
+                print(f"⚠️ Could not read service_account.json: {file_err}")
+
+        if not service_account_info:
+            print("⚠️ service_account.json / GOOGLE_SERVICE_ACCOUNT_JSON not found. Skipping Google Indexing API.")
             return
 
         SCOPES = ["https://www.googleapis.com/auth/indexing"]
         ENDPOINT = "https://indexing.googleapis.com/v3/urlNotifications:publish"
 
-        creds = service_account.Credentials.from_service_account_file("service_account.json", scopes=SCOPES)
+        creds = service_account.Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
         session = AuthorizedSession(creds)
 
         response = session.post(
@@ -965,7 +980,8 @@ def ping_google_indexing_api(url):
             json={
                 "url": url,
                 "type": "URL_UPDATED"
-            }
+            },
+            timeout=10
         )
 
         if response.status_code == 200:
